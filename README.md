@@ -43,7 +43,7 @@ Le dépôt étant signé et déclaré comme source de confiance, **aucun avertis
 ### Alternative : `.deb` direct
 
 ```bash
-sudo apt install ./build/voxtype-config_0.1.0-1_all.deb
+sudo apt install ./build/voxtype-config_*_all.deb
 ```
 
 > Installé par cette voie via le Centre d'applications GNOME, un bandeau

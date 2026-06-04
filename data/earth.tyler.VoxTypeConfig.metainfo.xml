@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>earth.tyler.VoxTypeConfig</id>
+
+  <metadata_license>MIT</metadata_license>
+  <project_license>MIT</project_license>
+
+  <name>Configuration VoxType</name>
+  <name xml:lang="en">VoxType Settings</name>
+
+  <summary>Configurer la dictée vocale VoxType</summary>
+  <summary xml:lang="en">Configure VoxType voice dictation</summary>
+
+  <description>
+    <p>
+      Interface graphique GTK4 / libadwaita pour configurer entièrement VoxType
+      (dictée vocale) sans éditer le fichier config.toml à la main.
+    </p>
+    <p xml:lang="en">
+      A GTK4 / libadwaita graphical interface to fully configure VoxType (voice
+      dictation) without hand-editing config.toml.
+    </p>
+    <ul>
+      <li>Couverture complète des réglages, organisée par pages</li>
+      <li xml:lang="en">Complete coverage of the settings, organised by pages</li>
+      <li>Préserve les commentaires et l'ordre du fichier de configuration</li>
+      <li xml:lang="en">Preserves the comments and ordering of the configuration file</li>
+      <li>Sauvegarde automatique et redémarrage du daemon en un clic</li>
+      <li xml:lang="en">Automatic backup and one-click daemon restart</li>
+      <li>Listes déroulantes pour les modèles, les dispositions clavier et les touches</li>
+      <li xml:lang="en">Dropdowns for models, keyboard layouts and hotkeys</li>
+      <li>Tableau trié pour les remplacements de mots</li>
+      <li xml:lang="en">Sorted table for word replacements</li>
+    </ul>
+  </description>
+
+  <launchable type="desktop-id">earth.tyler.VoxTypeConfig.desktop</launchable>
+
+  <developer id="earth.tyler">
+    <name>Emmanuel Wenner</name>
+  </developer>
+
+  <url type="homepage">https://github.com/Belenos-Toutatis/voxtype-config-gui</url>
+  <url type="bugtracker">https://github.com/Belenos-Toutatis/voxtype-config-gui/issues</url>
+
+  <categories>
+    <category>Utility</category>
+    <category>Settings</category>
+  </categories>
+
+  <keywords>
+    <keyword>voxtype</keyword>
+    <keyword>dictée</keyword>
+    <keyword>voix</keyword>
+    <keyword>transcription</keyword>
+  </keywords>
+
+  <content_rating type="oars-1.1"/>
+
+  <releases>
+    <release version="0.1.0" date="2026-06-04">
+      <description>
+        <p>Première version.</p>
+      </description>
+    </release>
+  </releases>
+</component>

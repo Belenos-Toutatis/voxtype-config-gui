@@ -8,7 +8,7 @@ cd "$SRC_DIR"
 
 PKG="voxtype-config"
 VERSION="0.1.0"
-REVISION="1"
+REVISION="2"
 ARCH="all"                       # paquet Python pur, indépendant de l'architecture
 MAINTAINER="Emmanuel Wenner <emmanuel.wenner@gmail.com>"
 APP_ID="earth.tyler.VoxTypeConfig"
@@ -23,6 +23,7 @@ mkdir -p "$ROOT/DEBIAN" \
          "$ROOT/usr/share/$PKG" \
          "$ROOT/usr/bin" \
          "$ROOT/usr/share/applications" \
+         "$ROOT/usr/share/metainfo" \
          "$ROOT/usr/share/icons/hicolor/scalable/apps" \
          "$ROOT/usr/share/doc/$PKG"
 
@@ -44,11 +45,13 @@ PY
 chmod 755 "$ROOT/usr/bin/$PKG"
 
 # --- 3. Entrée de menu + icône ---------------------------------------------
-say "Fichier .desktop + icône"
+say "Fichier .desktop + icône + métadonnées AppStream"
 install -m 644 "$SRC_DIR/data/$APP_ID.desktop" \
         "$ROOT/usr/share/applications/$APP_ID.desktop"
 install -m 644 "$SRC_DIR/data/$APP_ID.svg" \
         "$ROOT/usr/share/icons/hicolor/scalable/apps/$APP_ID.svg"
+install -m 644 "$SRC_DIR/data/$APP_ID.metainfo.xml" \
+        "$ROOT/usr/share/metainfo/$APP_ID.metainfo.xml"
 
 # --- 4. Documentation / copyright ------------------------------------------
 install -m 644 "$SRC_DIR/README.md" "$ROOT/usr/share/doc/$PKG/README.md"
@@ -74,12 +77,11 @@ Maintainer: $MAINTAINER
 Installed-Size: $INSTALLED_KB
 Depends: python3 (>= 3.10), python3-gi, gir1.2-gtk-4.0 (>= 4.0), gir1.2-adw-1 (>= 1.0), python3-tomlkit, python3-evdev
 Recommends: voxtype
-Description: Éditeur graphique de configuration pour VoxType
- Interface GTK4 / libadwaita pour configurer entièrement VoxType (dictée
- vocale) sans éditer le fichier config.toml à la main. Préserve les
- commentaires et l'ordre du fichier, sauvegarde automatique, redémarrage
- du daemon en un clic, listes déroulantes pour les modèles, dispositions
- clavier et touches de raccourci.
+Description: Graphical configuration editor for VoxType
+ A GTK4 / libadwaita interface to fully configure VoxType (voice dictation)
+ without hand-editing config.toml. Preserves the file's comments and ordering,
+ automatic backup, one-click daemon restart, and dropdowns for models, keyboard
+ layouts and hotkeys. The user-facing interface is in French.
 EOF
 
 # --- 6. Scripts de maintenance (rafraîchit les caches) ---------------------
