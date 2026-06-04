@@ -45,6 +45,81 @@ for arch in $ARCHES; do
 done
 rm -f /tmp/voxPackages
 
+# --- 3b. Catalogue AppStream DEP-11 (fiche propre dans le Centre d'applications)
+APP_ID="earth.tyler.VoxTypeConfig"
+if command -v appstreamcli >/dev/null 2>&1 \
+   && appstreamcli compose --version >/dev/null 2>&1; then
+    say "Génération du catalogue AppStream DEP-11"
+    DEP11="dists/$SUITE/$COMP/dep11"
+    mkdir -p "$DEP11"
+    TREE="$(mktemp -d)"; ASOUT="$(mktemp -d)"
+    dpkg-deb -x "$SRC_DIR/$DEB" "$TREE"
+    appstreamcli compose --origin "$ORIGIN" \
+        --result-root "$ASOUT" --data-dir "$ASOUT/data" \
+        --icons-dir "$ASOUT/icons" --prefix /usr --no-net \
+        --print-report on-error "$TREE" >/dev/null 2>&1 || true
+
+    # Icônes : un tarball par taille, fichier nommé <paquet>_<Icon>.png
+    ICONNAME="voxtype-config_${APP_ID}.png"
+    for size in 48x48 64x64 64x64@2 128x128 128x128@2; do
+        src="$ASOUT/icons/$size/$APP_ID.png"
+        [ -f "$src" ] || continue
+        td="$(mktemp -d)"; cp "$src" "$td/$ICONNAME"
+        tar -C "$td" -czf "$DEP11/icons-$size.tar.gz" "$ICONNAME"
+        rm -rf "$td"
+    done
+
+    # Catalogue Components-<arch>.yml.gz (émis en JSON, qui est du YAML valide)
+    python3 - "$DEP11" "$ORIGIN" "$APP_ID" "$ICONNAME" <<'PY'
+import json, sys, gzip, os
+dep11, origin, appid, iconname = sys.argv[1:5]
+header = {"File": "DEP-11", "Version": "1.0", "Origin": origin}
+comp = {
+    "Type": "desktop-application", "ID": appid, "Package": "voxtype-config",
+    "ProjectLicense": "MIT",
+    "Name": {"C": "Configuration VoxType", "en": "VoxType Settings"},
+    "Summary": {"C": "Configurer la dictée vocale VoxType",
+                "en": "Configure VoxType voice dictation"},
+    "Description": {
+        "C": ("<p>Interface graphique GTK4 / libadwaita pour configurer "
+              "entièrement VoxType (dictée vocale) sans éditer le fichier "
+              "config.toml à la main.</p><ul>"
+              "<li>Couverture complète des réglages, organisée par pages</li>"
+              "<li>Préserve les commentaires et l'ordre du fichier</li>"
+              "<li>Sauvegarde automatique et redémarrage du daemon en un clic</li>"
+              "<li>Listes déroulantes : modèles, dispositions clavier, raccourcis</li>"
+              "<li>Tableau trié pour les remplacements de mots</li></ul>"),
+        "en": ("<p>A GTK4 / libadwaita interface to fully configure VoxType "
+               "(voice dictation) without hand-editing config.toml.</p><ul>"
+               "<li>Complete coverage of the settings, organised by pages</li>"
+               "<li>Preserves the comments and ordering of the file</li>"
+               "<li>Automatic backup and one-click daemon restart</li>"
+               "<li>Dropdowns for models, keyboard layouts and hotkeys</li>"
+               "<li>Sorted table for word replacements</li></ul>"),
+    },
+    "Developer": {"name": {"C": "Emmanuel Wenner"}},
+    "Categories": ["Utility", "Settings"],
+    "Keywords": {"C": ["voxtype", "dictée", "voix", "transcription"]},
+    "Url": {"homepage": "https://github.com/Belenos-Toutatis/voxtype-config-gui",
+            "bugtracker": "https://github.com/Belenos-Toutatis/voxtype-config-gui/issues"},
+    "Launchable": {"desktop-id": [appid + ".desktop"]},
+    "Icon": {"cached": [
+        {"name": iconname, "width": 48, "height": 48},
+        {"name": iconname, "width": 64, "height": 64},
+        {"name": iconname, "width": 128, "height": 128},
+    ]},
+}
+doc = ("---\n" + json.dumps(header, ensure_ascii=False)
+       + "\n---\n" + json.dumps(comp, ensure_ascii=False) + "\n").encode("utf-8")
+for arch in ("amd64", "arm64"):
+    with gzip.open(os.path.join(dep11, f"Components-{arch}.yml.gz"), "wb") as fh:
+        fh.write(doc)
+PY
+    rm -rf "$TREE" "$ASOUT"
+else
+    say "appstreamcli compose absent — DEP-11 ignoré (dépôt fonctionnel quand même)"
+fi
+
 # --- 4. Fichier Release (checksums de tous les index) ----------------------
 say "Génération de Release"
 apt-ftparchive \
