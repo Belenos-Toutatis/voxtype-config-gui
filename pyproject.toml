@@ -1,0 +1,21 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "voxtype-config"
+version = "0.1.0"
+description = "Éditeur graphique (GTK4/libadwaita) du fichier de configuration de VoxType"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "tomlkit>=0.11",
+    # PyGObject + GTK4 + libadwaita sont fournis par le système (apt),
+    # pas par PyPI. Voir install.sh.
+]
+
+[project.scripts]
+voxtype-config = "voxtype_config.app:main"
+
+[tool.setuptools]
+packages = ["voxtype_config"]

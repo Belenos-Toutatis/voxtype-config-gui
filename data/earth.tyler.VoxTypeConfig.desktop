@@ -1,0 +1,12 @@
+[Desktop Entry]
+Type=Application
+Name=Configuration VoxType
+Name[en]=VoxType Settings
+Comment=Configurer VoxType (dictée vocale)
+Comment[en]=Configure VoxType voice dictation
+Exec=voxtype-config
+Icon=earth.tyler.VoxTypeConfig
+Terminal=false
+Categories=Settings;Utility;Audio;
+Keywords=voxtype;voice;dictation;dictée;voix;transcription;
+StartupNotify=true

@@ -1,0 +1,16 @@
+# Environnements / build
+.venv/
+build/
+dist/
+*.deb
+
+# Caches Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+
+# État local de l'agent / éditeurs
+.claude/
+*.bak
+*~
+.DS_Store

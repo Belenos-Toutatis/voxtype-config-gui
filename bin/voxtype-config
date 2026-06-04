@@ -1,0 +1,26 @@
+#!/usr/bin/env python3
+"""Lanceur de l'éditeur de configuration VoxType.
+
+Ajoute le répertoire d'installation au PYTHONPATH puis démarre l'application.
+"""
+import os
+import sys
+
+# Répertoire où install.sh dépose le paquet (modifiable via VOXTYPE_CONFIG_HOME)
+_pkg_dir = os.environ.get(
+    "VOXTYPE_CONFIG_HOME",
+    os.path.expanduser("~/.local/share/voxtype-config"),
+)
+if os.path.isdir(os.path.join(_pkg_dir, "voxtype_config")):
+    sys.path.insert(0, _pkg_dir)
+
+try:
+    from voxtype_config.app import main
+except ModuleNotFoundError as e:
+    sys.stderr.write(
+        f"Erreur : impossible de trouver le paquet voxtype_config ({e}).\n"
+        "Lancez install.sh ou définissez VOXTYPE_CONFIG_HOME vers le dossier source.\n"
+    )
+    sys.exit(1)
+
+sys.exit(main(sys.argv))
