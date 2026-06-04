@@ -1,0 +1,39 @@
+Architectures: amd64 arm64 all
+Codename: stable
+Components: main
+Date: Thu, 04 Jun 2026 21:09:04 +0000
+Label: VoxType Config GUI
+Origin: voxtype-config-gui
+Suite: stable
+MD5Sum:
+ 6a0f6d8743c1d9871c19124ead977ccc              170 Release
+ 71062c49144778e5b24fd01a09bf13cd             1061 main/binary-all/Packages
+ fe53c0716dff359a6411f198a4d5d9cb              732 main/binary-all/Packages.gz
+ 71062c49144778e5b24fd01a09bf13cd             1061 main/binary-amd64/Packages
+ fe53c0716dff359a6411f198a4d5d9cb              732 main/binary-amd64/Packages.gz
+ 71062c49144778e5b24fd01a09bf13cd             1061 main/binary-arm64/Packages
+ fe53c0716dff359a6411f198a4d5d9cb              732 main/binary-arm64/Packages.gz
+SHA1:
+ 2f19008dfeded1f72da7a34a17ca65599d8cbd1a              170 Release
+ 17242197f69128954e649b44f5d22846d1250227             1061 main/binary-all/Packages
+ b0f5e7fef179bad7d3461122e3dfcfac4598c147              732 main/binary-all/Packages.gz
+ 17242197f69128954e649b44f5d22846d1250227             1061 main/binary-amd64/Packages
+ b0f5e7fef179bad7d3461122e3dfcfac4598c147              732 main/binary-amd64/Packages.gz
+ 17242197f69128954e649b44f5d22846d1250227             1061 main/binary-arm64/Packages
+ b0f5e7fef179bad7d3461122e3dfcfac4598c147              732 main/binary-arm64/Packages.gz
+SHA256:
+ f369ab6f48f70c634d84009d1640c409e0d1d5a629351c131ae5ec4fb542f25d              170 Release
+ 2b7b4f975dbb3c6a735ba7610d1d50c1465f99ca67388c21cec925feec6ca0d0             1061 main/binary-all/Packages
+ 902aabbc82dd239284a104f6457c45b4bf268f194976c20a914e80743e47be12              732 main/binary-all/Packages.gz
+ 2b7b4f975dbb3c6a735ba7610d1d50c1465f99ca67388c21cec925feec6ca0d0             1061 main/binary-amd64/Packages
+ 902aabbc82dd239284a104f6457c45b4bf268f194976c20a914e80743e47be12              732 main/binary-amd64/Packages.gz
+ 2b7b4f975dbb3c6a735ba7610d1d50c1465f99ca67388c21cec925feec6ca0d0             1061 main/binary-arm64/Packages
+ 902aabbc82dd239284a104f6457c45b4bf268f194976c20a914e80743e47be12              732 main/binary-arm64/Packages.gz
+SHA512:
+ 38f2a74e2b08d4537d6017a8670ec4689fda9af3a895d843abeb05ad933174df9b8da8c69ea824f0788ddf6302d1fb4b593be8a49ce5b40f45fe8e15091eb97a              170 Release
+ 7c6da62f9532e81767c3292223913920a4c6f54a8b5e09d3b7dfbaa629659499d71151bcc2b88c3327408e12c9587ed21624f17e95e6d7c5439878c045b42c08             1061 main/binary-all/Packages
+ 4181f4f21466f3fe45f0cf8e2b2c6f39679340d6edd17a56b9ab00737bc51acfd375ea895b726d50aeaba0eeb1bd9b7256e99c9333ab98fb175aa8f9a6bb3055              732 main/binary-all/Packages.gz
+ 7c6da62f9532e81767c3292223913920a4c6f54a8b5e09d3b7dfbaa629659499d71151bcc2b88c3327408e12c9587ed21624f17e95e6d7c5439878c045b42c08             1061 main/binary-amd64/Packages
+ 4181f4f21466f3fe45f0cf8e2b2c6f39679340d6edd17a56b9ab00737bc51acfd375ea895b726d50aeaba0eeb1bd9b7256e99c9333ab98fb175aa8f9a6bb3055              732 main/binary-amd64/Packages.gz
+ 7c6da62f9532e81767c3292223913920a4c6f54a8b5e09d3b7dfbaa629659499d71151bcc2b88c3327408e12c9587ed21624f17e95e6d7c5439878c045b42c08             1061 main/binary-arm64/Packages
+ 4181f4f21466f3fe45f0cf8e2b2c6f39679340d6edd17a56b9ab00737bc51acfd375ea895b726d50aeaba0eeb1bd9b7256e99c9333ab98fb175aa8f9a6bb3055              732 main/binary-arm64/Packages.gz

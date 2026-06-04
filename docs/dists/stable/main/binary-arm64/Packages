@@ -1,0 +1,22 @@
+Package: voxtype-config
+Architecture: all
+Version: 0.1.0-1
+Priority: optional
+Section: utils
+Maintainer: Emmanuel Wenner <emmanuel.wenner@gmail.com>
+Installed-Size: 156
+Depends: python3 (>= 3.10), python3-gi, gir1.2-gtk-4.0 (>= 4.0), gir1.2-adw-1 (>= 1.0), python3-tomlkit, python3-evdev
+Recommends: voxtype
+Filename: pool/main/voxtype-config_0.1.0-1_all.deb
+Size: 22032
+MD5sum: 05795a03f245cee97059e3fb77a7d609
+SHA1: 7dc9803b0677c98ae4ddbef4e4889b15d39f7d97
+SHA256: ca32903a4507c06f901881e35addf952644dc80b6b6428a6e38b0a3439faf1d2
+SHA512: 847acb10254ea23ebc3ec2ad3f12993864c36f43dd66a76f254d471a150ad432c923fc568582589d68724d4e9d20ca64a5bced1fe817012d2eb8793edc649587
+Description: Éditeur graphique de configuration pour VoxType
+ Interface GTK4 / libadwaita pour configurer entièrement VoxType (dictée
+ vocale) sans éditer le fichier config.toml à la main. Préserve les
+ commentaires et l'ordre du fichier, sauvegarde automatique, redémarrage
+ du daemon en un clic, listes déroulantes pour les modèles, dispositions
+ clavier et touches de raccourci.
+

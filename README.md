@@ -20,34 +20,59 @@ Une application **GTK4 / libadwaita** pour configurer entièrement
 - Éditeur dédié pour les **remplacements de mots** (clé → valeur).
 - N'écrit pas les valeurs par défaut : le fichier reste minimal et lisible.
 
-## Installation (paquet .deb, Debian/Ubuntu)
+## Installation (Debian/Ubuntu)
+
+### Recommandé : dépôt APT (signé, mises à jour automatiques)
+
+Une seule fois, on ajoute le dépôt et sa clé de signature :
 
 ```bash
-./build-deb.sh
+sudo install -d /etc/apt/keyrings
+curl -fsSL https://belenos-toutatis.github.io/voxtype-config-gui/KEY.gpg \
+  | sudo gpg --dearmor -o /etc/apt/keyrings/voxtype-config.gpg
+echo "deb [signed-by=/etc/apt/keyrings/voxtype-config.gpg] https://belenos-toutatis.github.io/voxtype-config-gui stable main" \
+  | sudo tee /etc/apt/sources.list.d/voxtype-config.list
+sudo apt update
+sudo apt install voxtype-config
+```
+
+Le dépôt étant signé et déclaré comme source de confiance, **aucun avertissement
+« paquet tiers »** n'apparaît, et les nouvelles versions arrivent via
+`sudo apt upgrade`.
+
+### Alternative : `.deb` direct
+
+```bash
 sudo apt install ./build/voxtype-config_0.1.0-1_all.deb
 ```
 
-apt résout automatiquement les dépendances (`python3-gi`, `gir1.2-gtk-4.0`,
-`gir1.2-adw-1`, `python3-tomlkit`, `python3-evdev`). L'application s'installe
-dans `/usr/share/voxtype-config`, avec le lanceur `/usr/bin/voxtype-config` et
-l'entrée de menu « Configuration VoxType ».
+> Installé par cette voie via le Centre d'applications GNOME, un bandeau
+> « paquet tiers » s'affiche (normal pour tout `.deb` hors dépôt). L'installation
+> en terminal ci-dessus ne l'affiche pas.
 
-Puis lancez :
-
-```bash
-voxtype-config
-```
-
-ou cherchez **Configuration VoxType** dans vos applications.
-
-Désinstallation propre :
+### Lancer / désinstaller
 
 ```bash
+voxtype-config                 # ou « Configuration VoxType » dans vos applications
 sudo apt remove voxtype-config
 ```
 
 > Votre `~/.config/voxtype/config.toml` n'est jamais touché par la
 > désinstallation.
+
+## Publier une nouvelle version (mainteneur)
+
+```bash
+# 1. (optionnel) bump de version dans build-deb.sh
+./build-deb.sh            # construit build/voxtype-config_<ver>_all.deb
+./build-apt-repo.sh       # régénère et signe le dépôt APT dans docs/
+git add -A && git commit -m "release <ver>" && git push
+```
+
+GitHub Pages sert le dossier `docs/`. La signature utilise la clé GPG
+`VoxType Config GUI APT` (empreinte `D7464FE0D891102553AFC9CA7B73B857273877E7`) ;
+la clé **privée** reste dans le trousseau local, seule la clé publique
+(`docs/KEY.gpg`) est publiée.
 
 ## Développement / exécution sans installer
 

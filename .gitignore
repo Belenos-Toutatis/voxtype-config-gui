@@ -3,6 +3,8 @@
 build/
 dist/
 *.deb
+# …sauf le .deb publié dans le dépôt APT (docs/)
+!docs/pool/**/*.deb
 
 # Caches Python
 __pycache__/
