@@ -343,9 +343,16 @@ SCHEMA: list[Page] = [
                   help="Appuie sur Entrée après la dictée (chats, formulaires)."),
             Field("output.shift_enter_newlines", "Maj+Entrée pour les sauts de ligne", "bool", False,
                   help="Utile pour Cursor, Slack, Discord où Entrée valide."),
-            Field("output.append_text", "Texte ajouté après chaque dictée", "string", "",
-                  help="Séparateur ajouté avant l'auto-validation. "
-                       "Ex. un espace ou « \\n »."),
+            Field("output.append_text", "Texte ajouté après chaque dictée", "enum", "",
+                  options=[
+                      ("", "(rien)"),
+                      (" ", "Espace"),
+                      ("\n", "Nouvelle ligne"),
+                  ],
+                  help="Séparateur ajouté à la fin de chaque dictée (avant "
+                       "l'auto-validation). Un espace évite que deux dictées "
+                       "successives se collent. Une valeur personnalisée saisie "
+                       "à la main dans le fichier est conservée."),
         ]),
         Group("Pilotes de frappe", [
             Field("output.driver_order", "Ordre des pilotes", "driver_order",

@@ -364,7 +364,7 @@ class Window(Adw.ApplicationWindow):
             application_name="Configuration VoxType",
             application_icon=APP_ID,
             developer_name="VoxType Config",
-            version="0.2.1",
+            version="0.2.2",
             comments="Éditeur graphique du fichier de configuration de VoxType.\n"
                      "Préserve les commentaires et l'ordre du config.toml.",
             website="https://github.com/",

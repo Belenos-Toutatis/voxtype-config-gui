@@ -58,6 +58,13 @@
   <content_rating type="oars-1.1"/>
 
   <releases>
+    <release version="0.2.2" date="2026-07-07">
+      <description>
+        <p>Le séparateur de fin de dictée devient une liste claire (rien /
+        espace / nouvelle ligne) au lieu d'un champ texte où l'espace était
+        invisible.</p>
+      </description>
+    </release>
     <release version="0.2.1" date="2026-07-07">
       <description>
         <p>Garde-fou streaming Parakeet : l'enregistrement est bloqué si le

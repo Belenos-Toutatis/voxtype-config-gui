@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "voxtype-config"
-version = "0.2.1"
+version = "0.2.2"
 description = "Éditeur graphique (GTK4/libadwaita) du fichier de configuration de VoxType"
 readme = "README.md"
 requires-python = ">=3.10"
