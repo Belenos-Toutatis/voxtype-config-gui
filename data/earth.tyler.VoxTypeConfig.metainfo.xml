@@ -58,6 +58,14 @@
   <content_rating type="oars-1.1"/>
 
   <releases>
+    <release version="0.2.0" date="2026-07-07">
+      <description>
+        <p>Nouvelle page Profils (profils de post-traitement et associations
+        modificateur → profil), streaming Parakeet, attente du relâchement des
+        modificateurs. Corrections : défaut VAD, retrait de parakeet.quantized,
+        étiquette du moteur Cohere.</p>
+      </description>
+    </release>
     <release version="0.1.0" date="2026-06-04">
       <description>
         <p>Première version.</p>

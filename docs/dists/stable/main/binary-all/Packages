@@ -1,18 +1,18 @@
 Package: voxtype-config
 Architecture: all
-Version: 0.1.0-2
+Version: 0.2.0-1
 Priority: optional
 Section: utils
 Maintainer: Emmanuel Wenner <emmanuel.wenner@gmail.com>
-Installed-Size: 164
+Installed-Size: 172
 Depends: python3 (>= 3.10), python3-gi, gir1.2-gtk-4.0 (>= 4.0), gir1.2-adw-1 (>= 1.0), python3-tomlkit, python3-evdev
 Recommends: voxtype
-Filename: pool/main/voxtype-config_0.1.0-2_all.deb
-Size: 23240
-MD5sum: 14db542e3f90fe1d7fa12d650ed829d3
-SHA1: 13432739e9fd6798fe2d6187355625fab6b28bb6
-SHA256: dfb21112cf4dd8e5b732fdfc5f4024f9ba0b00c91da89dd6237382d7af3c1197
-SHA512: 181897b0541179d357305393d44ca3e07e1d4327e139116fd34d14a2efccff4a9d6590525d2c75575f5a64b385d33ca0bc4696223bf7410725e8cb949bf94164
+Filename: pool/main/voxtype-config_0.2.0-1_all.deb
+Size: 24882
+MD5sum: 11fb194ee5fe2b7f78f7b1a884c67bd2
+SHA1: b653b681891d9337561ece2c4fba9d5e6320b15f
+SHA256: 820432661a05068e5658819abda1b881ea18d7417bc7a5c921f8af3c57f34021
+SHA512: 8be1c62fdc033cfb2fa9a1892695010c2443b71314c9e280a8c65f16a58c544eb8bb4e280cd07a0c383349a4dd5657379ee5e4e37f42fcccc79c4b5a1aafadf3
 Description: Graphical configuration editor for VoxType
  A GTK4 / libadwaita interface to fully configure VoxType (voice dictation)
  without hand-editing config.toml. Preserves the file's comments and ordering,
