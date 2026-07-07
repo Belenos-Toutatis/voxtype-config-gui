@@ -318,10 +318,12 @@ SCHEMA: list[Page] = [
                   help="Détecté automatiquement depuis les fichiers du modèle ; "
                        "ne forcez une valeur que si la détection échoue."),
             Field("parakeet.streaming", "Streaming (frappe incrémentale)", "bool", False,
-                  help="Tape le texte au fil de la parole au lieu d'attendre la fin. "
-                       "Requiert un modèle TDT v3 avec tokenizer.model. Réglage fin "
-                       "possible à la main dans le fichier : streaming_chunk_secs, "
-                       "streaming_left_context_secs, streaming_right_context_secs."),
+                  help="⚠️ Nécessite un modèle streaming dédié contenant "
+                       "tokenizer.model (actuellement parakeet-unified-en-0.6b, "
+                       "ANGLAIS uniquement — à télécharger via « voxtype setup "
+                       "model »). Avec un modèle standard comme le v3 multilingue, "
+                       "le daemon refuse de démarrer. Tape le texte au fil de la "
+                       "parole au lieu d'attendre la fin de la dictée."),
         ]),
     ]),
 

@@ -7,7 +7,7 @@ SRC_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SRC_DIR"
 
 PKG="voxtype-config"
-VERSION="0.2.0"
+VERSION="0.2.1"
 REVISION="1"
 ARCH="all"                       # paquet Python pur, indépendant de l'architecture
 MAINTAINER="Emmanuel Wenner <emmanuel.wenner@gmail.com>"

@@ -58,6 +58,14 @@
   <content_rating type="oars-1.1"/>
 
   <releases>
+    <release version="0.2.1" date="2026-07-07">
+      <description>
+        <p>Garde-fou streaming Parakeet : l'enregistrement est bloqué si le
+        modèle choisi n'a pas de tokenizer.model (le daemon refuserait de
+        démarrer). Avertissement explicite : le streaming nécessite un modèle
+        dédié, anglais uniquement pour l'instant.</p>
+      </description>
+    </release>
     <release version="0.2.0" date="2026-07-07">
       <description>
         <p>Nouvelle page Profils (profils de post-traitement et associations

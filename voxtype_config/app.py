@@ -257,7 +257,37 @@ class Window(Adw.ApplicationWindow):
                 self.add_action(act)
         self.toasts.add_toast(t)
 
+    def _check_streaming_model(self) -> str | None:
+        """Streaming Parakeet sans tokenizer.model : le daemon ne démarre plus.
+
+        On bloque l'enregistrement plutôt que de laisser écrire une config qui
+        casse VoxType au prochain (re)démarrage.
+        """
+        import os
+        streaming = self.rows.get("parakeet.streaming")
+        engine = self.rows.get("engine")
+        if not streaming or not streaming.get_value():
+            return None
+        if engine and engine.get_value() != "parakeet":
+            return None                      # section [parakeet] inactive
+        model_row = self.rows.get("parakeet.model")
+        model = str(model_row.get_value() or "") if model_row else ""
+        model_dir = model if os.path.isabs(model) else os.path.expanduser(
+            f"~/.local/share/voxtype/models/{model}")
+        if os.path.isfile(os.path.join(model_dir, "tokenizer.model")):
+            return None
+        return (f"Le modèle « {model} » ne contient pas de fichier "
+                "tokenizer.model : avec « Streaming » activé, le daemon "
+                "VoxType refuserait de démarrer.\n\n"
+                "Téléchargez d'abord un modèle compatible streaming "
+                "(parakeet-unified-en-0.6b, anglais uniquement) via "
+                "« voxtype setup model », ou désactivez le streaming.")
+
     def on_save(self) -> bool:
+        problem = self._check_streaming_model()
+        if problem:
+            self._error_dialog("Streaming Parakeet impossible", problem)
+            return False
         try:
             changed = self._collect_changes()
             bak = self.doc.save(make_backup=True)
@@ -334,7 +364,7 @@ class Window(Adw.ApplicationWindow):
             application_name="Configuration VoxType",
             application_icon=APP_ID,
             developer_name="VoxType Config",
-            version="0.2.0",
+            version="0.2.1",
             comments="Éditeur graphique du fichier de configuration de VoxType.\n"
                      "Préserve les commentaires et l'ordre du config.toml.",
             website="https://github.com/",
