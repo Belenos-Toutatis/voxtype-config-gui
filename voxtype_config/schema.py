@@ -63,8 +63,8 @@ ENGINES = [
     ("paraformer", "Paraformer"),
     ("dolphin", "Dolphin"),
     ("omnilingual", "Omnilingual"),
-    ("cohere", "Cohere (API distante)"),
-    ("soniox", "Soniox (API distante)"),
+    ("cohere", "Cohere Transcribe (local, CPU — anglais surtout)"),
+    ("soniox", "Soniox (API cloud, temps réel)"),
 ]
 
 WHISPER_MODELS = [
@@ -311,8 +311,6 @@ SCHEMA: list[Page] = [
                   dynamic_options=_parakeet_models,
                   help="Modèle Parakeet. « -int8 » = quantifié (plus léger). "
                        "Les modèles marqués ✓ sont déjà téléchargés."),
-            Field("parakeet.quantized", "Quantifié", "bool", False,
-                  help="Modèle quantifié : moins de mémoire, légère perte de précision."),
             Field("parakeet.on_demand_loading", "Chargement à la demande", "bool", False,
                   help="Libère la mémoire entre les dictées (latence au 1er appui)."),
         ]),
@@ -443,7 +441,7 @@ SCHEMA: list[Page] = [
     # ---- VAD --------------------------------------------------------------
     Page("Détection de voix", "audio-volume-high-symbolic", [
         Group("Voice Activity Detection", [
-            Field("vad.enabled", "Activer la VAD", "bool", True,
+            Field("vad.enabled", "Activer la VAD", "bool", False,
                   help="Filtre les enregistrements silencieux (évite les "
                        "hallucinations de Whisper)."),
             Field("vad.backend", "Backend", "enum", "auto", options=[
