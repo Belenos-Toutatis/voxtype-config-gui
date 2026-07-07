@@ -313,6 +313,15 @@ SCHEMA: list[Page] = [
                        "Les modèles marqués ✓ sont déjà téléchargés."),
             Field("parakeet.on_demand_loading", "Chargement à la demande", "bool", False,
                   help="Libère la mémoire entre les dictées (latence au 1er appui)."),
+            Field("parakeet.model_type", "Type de modèle", "enum", "", options=[
+                ("", "(auto-détecté)"), ("tdt", "tdt"), ("ctc", "ctc")],
+                  help="Détecté automatiquement depuis les fichiers du modèle ; "
+                       "ne forcez une valeur que si la détection échoue."),
+            Field("parakeet.streaming", "Streaming (frappe incrémentale)", "bool", False,
+                  help="Tape le texte au fil de la parole au lieu d'attendre la fin. "
+                       "Requiert un modèle TDT v3 avec tokenizer.model. Réglage fin "
+                       "possible à la main dans le fichier : streaming_chunk_secs, "
+                       "streaming_left_context_secs, streaming_right_context_secs."),
         ]),
     ]),
 
@@ -362,6 +371,14 @@ SCHEMA: list[Page] = [
             Field("output.wtype_shift_prefix", "Préfixe Maj (wtype)", "bool", False,
                   help="Contournement pour les apps (Discord) qui perdent le 1er "
                        "caractère CJK."),
+            Field("output.wait_for_modifier_release", "Attendre le relâchement des modificateurs",
+                  "bool", True,
+                  help="Avant de taper, attend que Ctrl/Alt/Maj/Super soient relâchés "
+                       "pour éviter de déclencher des raccourcis involontaires."),
+            Field("output.modifier_release_timeout_ms", "Délai max d'attente (ms)", "int", 750,
+                  minimum=0, maximum=5000, step=50,
+                  help="Au-delà de ce délai, la frappe démarre même si un "
+                       "modificateur est encore enfoncé."),
         ]),
         Group("Mode coller / presse-papiers", [
             Field("output.paste_keys", "Raccourci de collage", "string", "ctrl+v",
@@ -496,6 +513,25 @@ SCHEMA: list[Page] = [
         Group("Diarisation (qui parle)", [
             Field("meeting.diarization.enabled", "Activer la diarisation", "bool", False,
                   help="Identifie les différents locuteurs."),
+        ]),
+    ]),
+
+    # ---- PROFILS ----------------------------------------------------------
+    Page("Profils", "avatar-default-symbolic", [
+        Group("Profils de dictée", [
+            # Champ spécial : éditeur de tables [profiles.<nom>] (widget dédié).
+            Field("profiles", "Profils", "profiles", {},
+                  help="Profils nommés de post-traitement. Les options non "
+                       "renseignées héritent de la configuration principale."),
+        ], description="Utilisés via « voxtype record start --profile <nom> » ou "
+                       "via un modificateur associé ci-dessous."),
+        Group("Modificateur → profil", [
+            Field("hotkey.profile_modifiers", "Associations modificateur → profil",
+                  "replacements", {},
+                  help="Maintenez ce modificateur avec la touche de dictée pour "
+                       "activer le profil. Clé : un modificateur (LEFTSHIFT, "
+                       "RIGHTCTRL, LEFTALT…), valeur : le nom du profil. "
+                       "Nécessite la détection intégrée du raccourci."),
         ]),
     ]),
 ]

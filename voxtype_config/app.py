@@ -21,9 +21,12 @@ def _values_equal(a, b) -> bool:
     if isinstance(a, list) and isinstance(b, list):
         return [str(x) for x in a] == [str(x) for x in b]
     if isinstance(a, dict) and isinstance(b, dict):
-        # sensible à l'ordre : permet de réécrire les remplacements triés
-        return ([(str(k), str(v)) for k, v in a.items()]
-                == [(str(k), str(v)) for k, v in b.items()])
+        # sensible à l'ordre : permet de réécrire les remplacements triés ;
+        # récursif pour les valeurs imbriquées (profils = dict de dicts)
+        if [str(k) for k in a.keys()] != [str(k) for k in b.keys()]:
+            return False
+        return all(_values_equal(va, vb)
+                   for va, vb in zip(a.values(), b.values()))
     if isinstance(a, bool) or isinstance(b, bool):
         return bool(a) == bool(b)
     if isinstance(a, (int, float)) and isinstance(b, (int, float)):
@@ -219,6 +222,14 @@ class Window(Adw.ApplicationWindow):
             tbl = tomlkit.inline_table()
             for k, v in value.items():
                 tbl[k] = v
+            self.doc.set(path, tbl)
+        elif fld.kind == "profiles":
+            tbl = tomlkit.table(is_super_table=True)
+            for name, params in value.items():
+                sub = tomlkit.table()
+                for k, v in params.items():
+                    sub[k] = v
+                tbl[name] = sub
             self.doc.set(path, tbl)
         else:
             self.doc.set(path, value)

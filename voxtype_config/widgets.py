@@ -119,6 +119,9 @@ class FieldRow(GObject.Object):
         elif kind == "replacements":
             self.row = ReplacementsRow(f, self._emit_changed)
 
+        elif kind == "profiles":
+            self.row = ProfilesRow(f, self._emit_changed)
+
         else:
             raise ValueError(f"type de champ inconnu : {kind}")
 
@@ -156,7 +159,7 @@ class FieldRow(GObject.Object):
             return _split_list(self._entry.get_text())
         if kind in ("string", "path", "command"):
             return self._entry.get_text()
-        if kind in ("replacements", "key", "driver_order", "multiselect"):
+        if kind in ("replacements", "profiles", "key", "driver_order", "multiselect"):
             return self.row.get_value()
         return None
 
@@ -203,7 +206,7 @@ class FieldRow(GObject.Object):
             self._entry.set_text(", ".join(str(x) for x in items))
         elif kind in ("string", "path", "command"):
             self._entry.set_text("" if value is None else str(value))
-        elif kind in ("replacements", "key", "driver_order", "multiselect"):
+        elif kind in ("replacements", "profiles", "key", "driver_order", "multiselect"):
             self.row.set_value(value)
 
 
@@ -502,4 +505,151 @@ class ReplacementsRow(Gtk.Box):
         items = sorted((mapping or {}).items(), key=lambda kv: str(kv[0]).casefold())
         for k, v in items:
             self._append(str(k), str(v))
+        self._update_count()
+
+
+PROFILE_OUTPUT_MODES = [
+    ("", "(hériter du mode principal)"),
+    ("type", "Frappe directe"),
+    ("paste", "Coller"),
+    ("clipboard", "Presse-papiers seul"),
+]
+
+
+class ProfilesRow(Gtk.Box):
+    """Éditeur des profils nommés ([profiles.<nom>]).
+
+    Chaque profil surcharge la commande de post-traitement, son timeout et/ou
+    le mode de sortie ; le reste hérite de la configuration principale.
+    """
+
+    def __init__(self, field: Field, on_change):
+        super().__init__(orientation=Gtk.Orientation.VERTICAL, spacing=6,
+                         margin_top=6, margin_bottom=6,
+                         margin_start=6, margin_end=6)
+        self._on_change = on_change
+        self._profiles: list[dict] = []      # {expander, name, cmd, timeout, mode}
+
+        self._listbox = Gtk.ListBox(selection_mode=Gtk.SelectionMode.NONE,
+                                    css_classes=["boxed-list"])
+        self.append(self._listbox)
+
+        footer = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6,
+                         margin_top=6)
+        add_btn = Gtk.Button(child=Adw.ButtonContent(
+            icon_name="list-add-symbolic", label="Ajouter un profil"))
+        add_btn.add_css_class("flat")
+        add_btn.connect("clicked", self._on_add)
+        self._count = Gtk.Label(css_classes=["dim-label"], hexpand=True, xalign=1)
+        footer.append(add_btn)
+        footer.append(self._count)
+        self.append(footer)
+
+    # -- gestion des profils -------------------------------------------------
+
+    def _make_profile(self, name: str, data: dict) -> dict:
+        exp = Adw.ExpanderRow(title=name or "(sans nom)")
+
+        name_e = Adw.EntryRow(title="Nom du profil")
+        name_e.set_text(name)
+        cmd_e = Adw.EntryRow(title="Commande de post-traitement")
+        cmd_e.set_text(str(data.get("post_process_command", "") or ""))
+        cmd_e.set_tooltip_text("Le transcript passe par stdin, la sortie stdout "
+                               "est tapée. Vide = hériter.")
+
+        adj = Gtk.Adjustment(lower=0, upper=120000, step_increment=1000,
+                             page_increment=10000)
+        timeout = Adw.SpinRow(title="Timeout (ms)", subtitle="0 = hériter",
+                              adjustment=adj, digits=0)
+        try:
+            timeout.set_value(float(data.get("post_process_timeout_ms", 0) or 0))
+        except (TypeError, ValueError):
+            timeout.set_value(0)
+
+        mode_model = Gtk.StringList()
+        for _, lbl in PROFILE_OUTPUT_MODES:
+            mode_model.append(lbl)
+        mode = Adw.ComboRow(title="Mode de sortie", model=mode_model)
+        mode.set_factory(_wrap_factory())
+        values = [v for v, _ in PROFILE_OUTPUT_MODES]
+        current = str(data.get("output_mode", "") or "")
+        mode.set_selected(values.index(current) if current in values else 0)
+
+        trash = Gtk.Button(icon_name="user-trash-symbolic",
+                           valign=Gtk.Align.CENTER, css_classes=["flat"])
+        trash.set_tooltip_text("Supprimer ce profil")
+        exp.add_suffix(trash)
+
+        entry = {"expander": exp, "name": name_e, "cmd": cmd_e,
+                 "timeout": timeout, "mode": mode}
+        trash.connect("clicked", lambda *_: self._remove(entry))
+        name_e.connect("changed", lambda *_: self._on_name_changed(entry))
+        cmd_e.connect("changed", lambda *_: self._on_change())
+        timeout.connect("notify::value", lambda *_: self._on_change())
+        mode.connect("notify::selected", lambda *_: self._on_change())
+
+        for row in (name_e, cmd_e, timeout, mode):
+            exp.add_row(row)
+        return entry
+
+    def _on_name_changed(self, entry: dict):
+        name = entry["name"].get_text().strip()
+        entry["expander"].set_title(name or "(sans nom)")
+        self._on_change()
+
+    def _append(self, name: str, data: dict) -> dict:
+        entry = self._make_profile(name, data)
+        self._listbox.append(entry["expander"])
+        self._profiles.append(entry)
+        self._update_count()
+        return entry
+
+    def _remove(self, entry: dict):
+        self._listbox.remove(entry["expander"])
+        self._profiles.remove(entry)
+        self._update_count()
+        self._on_change()
+
+    def _clear(self):
+        for entry in list(self._profiles):
+            self._listbox.remove(entry["expander"])
+        self._profiles = []
+
+    def _on_add(self, _btn):
+        entry = self._append("", {})
+        entry["expander"].set_expanded(True)
+        entry["name"].grab_focus()
+        self._on_change()
+
+    def _update_count(self):
+        n = len(self._profiles)
+        self._count.set_label(f"{n} profil" + ("s" if n > 1 else ""))
+
+    # -- valeurs ------------------------------------------------------------
+
+    def get_value(self) -> dict:
+        out: dict[str, dict] = {}
+        for entry in self._profiles:
+            name = entry["name"].get_text().strip()
+            if not name:
+                continue                     # profil sans nom : ignoré
+            params: dict = {}
+            cmd = entry["cmd"].get_text().strip()
+            if cmd:
+                params["post_process_command"] = cmd
+            timeout = int(entry["timeout"].get_value())
+            if timeout > 0:
+                params["post_process_timeout_ms"] = timeout
+            idx = entry["mode"].get_selected()
+            values = [v for v, _ in PROFILE_OUTPUT_MODES]
+            if 0 < idx < len(values):
+                params["output_mode"] = values[idx]
+            out[name] = params
+        return out
+
+    def set_value(self, mapping: dict):
+        self._clear()
+        items = sorted((mapping or {}).items(), key=lambda kv: str(kv[0]).casefold())
+        for name, data in items:
+            self._append(str(name), dict(data) if isinstance(data, dict) else {})
         self._update_count()
