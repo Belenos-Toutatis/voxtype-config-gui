@@ -532,7 +532,7 @@ SCHEMA: list[Page] = [
             Field("profiles", "Profiles", "profiles", {},
                   help="Named post-processing profiles. Unset options inherit "
                        "from the main configuration."),
-        ], description="Used via 'voxtype record start --profile <name>' or "
+        ], description="Used via 'voxtype record start --profile &lt;name&gt;' or "
                        "via an associated modifier below."),
         Group("Modifier → profile", [
             Field("hotkey.profile_modifiers", "Modifier → profile mappings",
