@@ -1,4 +1,4 @@
-"""Application GTK4 / libadwaita de configuration de VoxType."""
+"""GTK4 / libadwaita application for configuring VoxType."""
 
 from __future__ import annotations
 
@@ -17,12 +17,12 @@ APP_ID = "earth.tyler.VoxTypeConfig"
 
 
 def _values_equal(a, b) -> bool:
-    """Égalité tolérante entre une valeur widget et une valeur du TOML."""
+    """Lenient equality between a widget value and a TOML value."""
     if isinstance(a, list) and isinstance(b, list):
         return [str(x) for x in a] == [str(x) for x in b]
     if isinstance(a, dict) and isinstance(b, dict):
-        # sensible à l'ordre : permet de réécrire les remplacements triés ;
-        # récursif pour les valeurs imbriquées (profils = dict de dicts)
+        # order-sensitive: lets us rewrite sorted replacements;
+        # recursive for nested values (profiles = dict of dicts)
         if [str(k) for k in a.keys()] != [str(k) for k in b.keys()]:
             return False
         return all(_values_equal(va, vb)
@@ -38,7 +38,7 @@ class Window(Adw.ApplicationWindow):
     def __init__(self, app: Adw.Application, config_path=None):
         super().__init__(application=app)
         self.set_default_size(960, 720)
-        self.set_title("Configuration VoxType")
+        self.set_title("VoxType Configuration")
 
         self.config_path = config_path or default_config_path()
         self.doc = ConfigDocument.load(self.config_path)
@@ -51,14 +51,14 @@ class Window(Adw.ApplicationWindow):
         split = Adw.OverlaySplitView(min_sidebar_width=220, max_sidebar_width=280)
         self.split = split
 
-        # ---- contenu principal : header + pile de pages ----
+        # ---- main content: header + page stack ----
         self.stack = Adw.ViewStack()
         content_toolbar = Adw.ToolbarView()
         content_toolbar.add_top_bar(self._build_header())
         content_toolbar.set_content(self.stack)
         split.set_content(content_toolbar)
 
-        # ---- barre latérale ----
+        # ---- sidebar ----
         split.set_sidebar(self._build_sidebar())
 
         self.toasts.set_child(split)
@@ -71,24 +71,24 @@ class Window(Adw.ApplicationWindow):
 
     def _build_header(self) -> Adw.HeaderBar:
         header = Adw.HeaderBar()
-        self.title_widget = Adw.WindowTitle(title="Configuration VoxType",
+        self.title_widget = Adw.WindowTitle(title="VoxType Configuration",
                                             subtitle=str(self.config_path))
         header.set_title_widget(self.title_widget)
 
-        save_btn = Gtk.Button(label="Enregistrer", css_classes=["suggested-action"])
+        save_btn = Gtk.Button(label="Save", css_classes=["suggested-action"])
         save_btn.connect("clicked", lambda *_: self.on_save())
         header.pack_start(save_btn)
 
         menu = Gio.Menu()
-        menu.append("Recharger depuis le disque", "win.reload")
-        menu.append("Redémarrer le daemon VoxType", "win.restart")
-        menu.append("Aperçu du fichier TOML", "win.preview")
-        menu.append("À propos", "win.about")
+        menu.append("Reload from disk", "win.reload")
+        menu.append("Restart VoxType daemon", "win.restart")
+        menu.append("Preview TOML file", "win.preview")
+        menu.append("About", "win.about")
         menu_btn = Gtk.MenuButton(icon_name="open-menu-symbolic", menu_model=menu)
         header.pack_end(menu_btn)
 
         restart_btn = Gtk.Button(icon_name="view-refresh-symbolic")
-        restart_btn.set_tooltip_text("Enregistrer puis redémarrer le daemon")
+        restart_btn.set_tooltip_text("Save and restart daemon")
         restart_btn.connect("clicked", lambda *_: self.on_save_and_restart())
         header.pack_end(restart_btn)
 
@@ -117,7 +117,7 @@ class Window(Adw.ApplicationWindow):
         for page in SCHEMA:
             row = Adw.ActionRow(title=page.title)
             row.add_prefix(Gtk.Image.new_from_icon_name(page.icon))
-            row._page_title = page.title  # repère pour le ViewStack
+            row._page_title = page.title  # marker for the ViewStack
             self.sidebar_list.append(row)
 
         scroller = Gtk.ScrolledWindow(child=self.sidebar_list, vexpand=True)
@@ -130,8 +130,8 @@ class Window(Adw.ApplicationWindow):
 
     def _build_pages(self):
         for page in SCHEMA:
-            # Box des groupes, encadré par un Clamp large qui s'élargit avec la
-            # fenêtre (jusqu'à 1100 px) — évite la troncature des listes.
+            # Box of groups, wrapped in a wide Clamp that grows with the
+            # window (up to 1100 px) — prevents list truncation.
             box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=24,
                           margin_top=24, margin_bottom=24,
                           margin_start=12, margin_end=12)
@@ -152,13 +152,13 @@ class Window(Adw.ApplicationWindow):
 
         self._wire_xkb_dependency()
 
-        # sélectionne la première page
+        # selects the first page
         first = self.sidebar_list.get_row_at_index(0)
         if first:
             self.sidebar_list.select_row(first)
 
     def _wire_xkb_dependency(self):
-        """La liste des variantes suit la disposition clavier choisie."""
+        """The variant list follows the chosen keyboard layout."""
         from . import xkb
         layout_row = self.rows.get("output.dotool_xkb_layout")
         variant_row = self.rows.get("output.dotool_xkb_variant")
@@ -171,7 +171,7 @@ class Window(Adw.ApplicationWindow):
 
         layout_row.row.connect("notify::selected", on_layout_changed)
 
-    # -------------------------------------------------------------- données
+    # -------------------------------------------------------------- data
 
     def _load_into_rows(self):
         for path, frow in self.rows.items():
@@ -180,14 +180,15 @@ class Window(Adw.ApplicationWindow):
         self._dirty = False
 
     def _collect_changes(self) -> int:
-        """Écrit les valeurs des widgets dans le document tomlkit.
+        """Writes widget values into the tomlkit document.
 
-        Règles :
-        - une valeur VIDE ("", [], {}) n'est jamais écrite ; la clé est retirée
-          si elle était présente. (Une chaîne vide sur un champ-touche fait
-          planter VoxType — c'est aussi ce qui évite de réintroduire ce bug.)
-        - sinon, on écrit la clé si elle existe déjà OU si sa valeur diffère du
-          défaut (pour ne pas alourdir le fichier avec des défauts inutiles).
+        Rules:
+        - an EMPTY value ("", [], {}) is never written; the key is removed if
+          it was present. (An empty string on a key field crashes VoxType —
+          this is also what prevents reintroducing that bug.)
+        - otherwise, the key is written if it already exists OR if its value
+          differs from the default (to avoid bloating the file with
+          unnecessary defaults).
         """
         count = 0
         for path, frow in self.rows.items():
@@ -241,8 +242,8 @@ class Window(Adw.ApplicationWindow):
         self._update_subtitle()
 
     def _update_subtitle(self):
-        status = "● daemon actif" if system.daemon_is_active() else "○ daemon arrêté"
-        dirty = " — modifications non enregistrées" if self._dirty else ""
+        status = "● daemon running" if system.daemon_is_active() else "○ daemon stopped"
+        dirty = " — unsaved changes" if self._dirty else ""
         self.title_widget.set_subtitle(f"{self.config_path}   ·   {status}{dirty}")
 
     def _toast(self, text: str, button: str | None = None, action=None):
@@ -258,10 +259,10 @@ class Window(Adw.ApplicationWindow):
         self.toasts.add_toast(t)
 
     def _check_streaming_model(self) -> str | None:
-        """Streaming Parakeet sans tokenizer.model : le daemon ne démarre plus.
+        """Parakeet streaming without tokenizer.model: the daemon won't start.
 
-        On bloque l'enregistrement plutôt que de laisser écrire une config qui
-        casse VoxType au prochain (re)démarrage.
+        We block saving rather than let a config be written that breaks
+        VoxType on the next (re)start.
         """
         import os
         streaming = self.rows.get("parakeet.streaming")
@@ -269,39 +270,39 @@ class Window(Adw.ApplicationWindow):
         if not streaming or not streaming.get_value():
             return None
         if engine and engine.get_value() != "parakeet":
-            return None                      # section [parakeet] inactive
+            return None                      # [parakeet] section inactive
         model_row = self.rows.get("parakeet.model")
         model = str(model_row.get_value() or "") if model_row else ""
         model_dir = model if os.path.isabs(model) else os.path.expanduser(
             f"~/.local/share/voxtype/models/{model}")
         if os.path.isfile(os.path.join(model_dir, "tokenizer.model")):
             return None
-        return (f"Le modèle « {model} » ne contient pas de fichier "
-                "tokenizer.model : avec « Streaming » activé, le daemon "
-                "VoxType refuserait de démarrer.\n\n"
-                "Téléchargez d'abord un modèle compatible streaming "
-                "(parakeet-unified-en-0.6b, anglais uniquement) via "
-                "« voxtype setup model », ou désactivez le streaming.")
+        return (f"The model '{model}' has no tokenizer.model file: with "
+                "Streaming enabled, the VoxType daemon would refuse to "
+                "start.\n\n"
+                "First download a streaming-compatible model "
+                "(parakeet-unified-en-0.6b, English only) via "
+                "'voxtype setup model', or disable streaming.")
 
     def on_save(self) -> bool:
         problem = self._check_streaming_model()
         if problem:
-            self._error_dialog("Streaming Parakeet impossible", problem)
+            self._error_dialog("Parakeet streaming unavailable", problem)
             return False
         try:
             changed = self._collect_changes()
             bak = self.doc.save(make_backup=True)
             self._dirty = False
             self._update_subtitle()
-            msg = (f"Enregistré ({changed} réglage·s modifié·s)."
-                   if changed else "Aucune modification à enregistrer.")
+            msg = (f"Saved ({changed} setting(s) modified)."
+                   if changed else "No changes to save.")
             if bak and changed:
-                msg += " Sauvegarde .bak créée."
-            self._toast(msg, button="Redémarrer le daemon",
+                msg += " .bak backup created."
+            self._toast(msg, button="Restart daemon",
                         action=self._do_restart)
             return True
         except Exception as e:  # noqa: BLE001
-            self._error_dialog("Échec de l'enregistrement", str(e))
+            self._error_dialog("Save failed", str(e))
             return False
 
     def on_save_and_restart(self):
@@ -324,10 +325,10 @@ class Window(Adw.ApplicationWindow):
         self.doc = ConfigDocument.load(self.config_path)
         self._load_into_rows()
         self._update_subtitle()
-        self._toast("Configuration rechargée depuis le disque.")
+        self._toast("Configuration reloaded from disk.")
 
     def on_preview(self):
-        # applique les changements en mémoire (sans sauver) pour l'aperçu
+        # applies in-memory changes (without saving) for the preview
         snapshot = ConfigDocument.load(self.config_path)
         saved_doc = self.doc
         try:
@@ -338,7 +339,7 @@ class Window(Adw.ApplicationWindow):
 
         dialog = Adw.Window(transient_for=self, modal=True,
                             default_width=700, default_height=600,
-                            title="Aperçu config.toml")
+                            title="config.toml Preview")
         tv = Adw.ToolbarView()
         tv.add_top_bar(Adw.HeaderBar())
         textview = Gtk.TextView(editable=False, monospace=True,
@@ -361,12 +362,12 @@ class Window(Adw.ApplicationWindow):
     def on_about(self):
         about = Adw.AboutWindow(
             transient_for=self,
-            application_name="Configuration VoxType",
+            application_name="VoxType Configuration",
             application_icon=APP_ID,
             developer_name="VoxType Config",
-            version="0.2.2",
-            comments="Éditeur graphique du fichier de configuration de VoxType.\n"
-                     "Préserve les commentaires et l'ordre du config.toml.",
+            version="0.2.3",
+            comments="Graphical editor for the VoxType configuration file.\n"
+                     "Preserves comments and ordering in config.toml.",
             website="https://github.com/",
         )
         about.present()

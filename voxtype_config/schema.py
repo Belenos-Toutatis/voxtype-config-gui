@@ -1,10 +1,10 @@
-"""Schéma déclaratif de la configuration VoxType.
+"""Declarative schema for the VoxType configuration.
 
-Toute l'interface est générée à partir de ces données : ajouter une option
-revient à ajouter un Field ici, sans toucher au code de l'UI.
+The whole UI is generated from this data: adding an option amounts to
+adding a Field here, without touching the UI code.
 
-Chemins : chaque Field a un `path` pointé (ex. "output.notification.on_transcription")
-qui désigne sa place dans le config.toml.
+Paths: each Field has a `path` (e.g. "output.notification.on_transcription")
+pointing to its place in config.toml.
 """
 
 from __future__ import annotations
@@ -14,26 +14,26 @@ from typing import Any, Callable
 
 
 # --------------------------------------------------------------------------
-# Types de champs
+# Field types
 # --------------------------------------------------------------------------
 
 @dataclass
 class Field:
-    path: str                      # chemin pointé dans le TOML
-    label: str                     # titre de la ligne
+    path: str                      # path pointed to in the TOML
+    label: str                     # row title
     kind: str                      # bool|int|float|string|enum|list|path|command
     default: Any = None
-    help: str = ""                 # sous-titre explicatif
-    options: list[tuple[str, str]] = field(default_factory=list)  # (valeur, libellé) pour enum
+    help: str = ""                 # explanatory subtitle
+    options: list[tuple[str, str]] = field(default_factory=list)  # (value, label) for enum
     minimum: float = 0
     maximum: float = 100000
     step: float = 1
     placeholder: str = ""
-    # pour 'path' : choisir un dossier plutôt qu'un fichier
+    # for 'path': choose a folder instead of a file
     pick_folder: bool = False
-    # fonction renvoyant des choix dynamiques (valeur, libellé) — ex. périphériques audio
+    # function returning dynamic choices (value, label) — e.g. audio devices
     dynamic_options: Callable[[], list[tuple[str, str]]] | None = None
-    # rend ce champ visible seulement si une condition est vraie (path -> valeur attendue)
+    # makes this field visible only if a condition holds (path -> expected value)
     depends_on: tuple[str, Any] | None = None
 
 
@@ -47,24 +47,24 @@ class Group:
 @dataclass
 class Page:
     title: str
-    icon: str          # nom d'icône symbolique GNOME
+    icon: str          # GNOME symbolic icon name
     groups: list[Group]
 
 
 # --------------------------------------------------------------------------
-# Listes de valeurs réutilisées
+# Reused value lists
 # --------------------------------------------------------------------------
 
 ENGINES = [
-    ("parakeet", "Parakeet (local, NVIDIA NeMo — rapide, multilingue)"),
-    ("whisper", "Whisper (local ou distant)"),
-    ("moonshine", "Moonshine (local, léger)"),
+    ("parakeet", "Parakeet (local, NVIDIA NeMo — fast, multilingual)"),
+    ("whisper", "Whisper (local or remote)"),
+    ("moonshine", "Moonshine (local, lightweight)"),
     ("sensevoice", "SenseVoice"),
     ("paraformer", "Paraformer"),
     ("dolphin", "Dolphin"),
     ("omnilingual", "Omnilingual"),
-    ("cohere", "Cohere Transcribe (local, CPU — anglais surtout)"),
-    ("soniox", "Soniox (API cloud, temps réel)"),
+    ("cohere", "Cohere Transcribe (local, CPU — English mainly)"),
+    ("soniox", "Soniox (cloud API, real-time)"),
 ]
 
 WHISPER_MODELS = [
@@ -73,7 +73,7 @@ WHISPER_MODELS = [
     ("small", "small"), ("small.en", "small.en"),
     ("medium", "medium"), ("medium.en", "medium.en"),
     ("large-v3", "large-v3"),
-    ("large-v3-turbo", "large-v3-turbo (recommandé GPU)"),
+    ("large-v3-turbo", "large-v3-turbo (GPU recommended)"),
 ]
 
 ICON_THEMES = [
@@ -84,9 +84,9 @@ ICON_THEMES = [
 ]
 
 OSD_POSITIONS = [
-    ("bottom-center", "bas-centre"), ("top-center", "haut-centre"),
-    ("bottom-left", "bas-gauche"), ("bottom-right", "bas-droite"),
-    ("top-right", "haut-droite"),
+    ("bottom-center", "bottom center"), ("top-center", "top center"),
+    ("bottom-left", "bottom left"), ("bottom-right", "bottom right"),
+    ("top-right", "top right"),
 ]
 
 
@@ -100,7 +100,7 @@ KNOWN_PARAKEET_MODELS = [
 
 
 def _parakeet_models() -> list[tuple[str, str]]:
-    """Modèles connus + modèles réellement téléchargés dans ~/.local/share/voxtype/models."""
+    """Known models + models actually downloaded in ~/.local/share/voxtype/models."""
     import os
     found: list[str] = []
     models_dir = os.path.expanduser("~/.local/share/voxtype/models")
@@ -111,11 +111,11 @@ def _parakeet_models() -> list[tuple[str, str]]:
                 found.append(name)
     except OSError:
         pass
-    # ordre : modèles installés d'abord (annotés), puis les autres connus
+    # order: installed models first (annotated), then the other known ones
     out: list[tuple[str, str]] = []
     seen: set[str] = set()
     for m in found:
-        out.append((m, f"{m}  ✓ installé"))
+        out.append((m, f"{m}  ✓ installed"))
         seen.add(m)
     for m in KNOWN_PARAKEET_MODELS:
         if m not in seen:
@@ -125,10 +125,10 @@ def _parakeet_models() -> list[tuple[str, str]]:
 
 
 MODIFIER_KEYS = [
-    ("LEFTCTRL", "Ctrl gauche"), ("RIGHTCTRL", "Ctrl droit"),
-    ("LEFTSHIFT", "Maj gauche"), ("RIGHTSHIFT", "Maj droite"),
-    ("LEFTALT", "Alt gauche"), ("RIGHTALT", "Alt droit (AltGr)"),
-    ("LEFTMETA", "Super/Logo gauche"), ("RIGHTMETA", "Super/Logo droit"),
+    ("LEFTCTRL", "Left Ctrl"), ("RIGHTCTRL", "Right Ctrl"),
+    ("LEFTSHIFT", "Left Shift"), ("RIGHTSHIFT", "Right Shift"),
+    ("LEFTALT", "Left Alt"), ("RIGHTALT", "Right Alt (AltGr)"),
+    ("LEFTMETA", "Left Super/Logo"), ("RIGHTMETA", "Right Super/Logo"),
 ]
 
 
@@ -138,9 +138,9 @@ def _xkb_layouts() -> list[tuple[str, str]]:
 
 
 def _xkb_variants_current() -> list[tuple[str, str]]:
-    """Variantes pour la disposition actuellement configurée (peuplage initial).
+    """Variants for the currently configured layout (initial population).
 
-    La réactivité au changement de disposition est câblée dans l'app.
+    Reactivity to layout changes is wired up in the app.
     """
     from . import xkb
     from .config_io import ConfigDocument
@@ -153,9 +153,9 @@ def _xkb_variants_current() -> list[tuple[str, str]]:
 
 
 def _audio_sources() -> list[tuple[str, str]]:
-    """Liste les sources PulseAudio/PipeWire via pactl (rempli dynamiquement)."""
+    """Lists PulseAudio/PipeWire sources via pactl (filled dynamically)."""
     import subprocess
-    out = [("default", "Périphérique système par défaut")]
+    out = [("default", "System default device")]
     try:
         res = subprocess.run(
             ["pactl", "list", "sources", "short"],
@@ -171,376 +171,376 @@ def _audio_sources() -> list[tuple[str, str]]:
 
 
 # --------------------------------------------------------------------------
-# Le schéma complet, page par page
+# The complete schema, page by page
 # --------------------------------------------------------------------------
 
 SCHEMA: list[Page] = [
 
-    # ---- GÉNÉRAL ----------------------------------------------------------
-    Page("Général", "preferences-system-symbolic", [
-        Group("Moteur de transcription", [
-            Field("engine", "Moteur", "enum", "parakeet", options=ENGINES,
-                  help="Moteur utilisé pour convertir la voix en texte."),
+    # ---- GENERAL ---------------------------------------------------------
+    Page("General", "preferences-system-symbolic", [
+        Group("Transcription engine", [
+            Field("engine", "Engine", "enum", "parakeet", options=ENGINES,
+                  help="Engine used to convert speech to text."),
         ]),
-        Group("Intégration système", [
-            Field("state_file", "Fichier d'état", "string", "auto",
-                  help="Pour Waybar/polybar. « auto », un chemin, ou « disabled ». "
-                       "Requis pour `voxtype record toggle` et `voxtype status`.",
+        Group("System integration", [
+            Field("state_file", "State file", "string", "auto",
+                  help="For Waybar/polybar. 'auto', a path, or 'disabled'. "
+                       "Required for `voxtype record toggle` and `voxtype status`.",
                   placeholder="auto"),
         ]),
     ]),
 
-    # ---- RACCOURCI --------------------------------------------------------
-    Page("Raccourci", "input-keyboard-symbolic", [
-        Group("Touche d'activation", [
-            Field("hotkey.enabled", "Détection intégrée du raccourci", "bool", True,
-                  help="⚠️ Si désactivé, la touche de raccourci ne déclenche PLUS rien. "
-                       "Ne le désactivez que si vous pilotez VoxType via les raccourcis "
-                       "du compositeur (Hyprland, Sway) ou les commandes `voxtype record`."),
-            Field("hotkey.key", "Touche", "key", "PAUSE",
-                  help="Touche à maintenir (push-to-talk). Cliquez sur « Capturer » "
-                       "puis appuyez sur la touche voulue, ou choisissez-en une.",
+    # ---- HOTKEY ----------------------------------------------------------
+    Page("Hotkey", "input-keyboard-symbolic", [
+        Group("Activation key", [
+            Field("hotkey.enabled", "Built-in hotkey detection", "bool", True,
+                  help="⚠️ If disabled, the hotkey no longer triggers ANYTHING. "
+                       "Only disable it if you drive VoxType via compositor "
+                       "shortcuts (Hyprland, Sway) or the `voxtype record` commands."),
+            Field("hotkey.key", "Key", "key", "PAUSE",
+                  help="Key to hold (push-to-talk). Click 'Capture' then press "
+                       "the desired key, or pick one from the list.",
                   placeholder="PAUSE"),
-            Field("hotkey.modifiers", "Modificateurs", "multiselect", [],
+            Field("hotkey.modifiers", "Modifiers", "multiselect", [],
                   options=MODIFIER_KEYS,
-                  help="Touches à maintenir en plus de la touche principale."),
-            Field("hotkey.mode", "Mode d'activation", "enum", "push_to_talk", options=[
-                ("push_to_talk", "Push-to-talk (maintenir pour parler)"),
-                ("toggle", "Bascule (appuyer pour démarrer/arrêter)"),
+                  help="Keys to hold in addition to the main key."),
+            Field("hotkey.mode", "Activation mode", "enum", "push_to_talk", options=[
+                ("push_to_talk", "Push-to-talk (hold to talk)"),
+                ("toggle", "Toggle (press to start/stop)"),
             ]),
-            Field("hotkey.cancel_key", "Touche d'annulation", "key", "",
-                  help="Annule l'enregistrement/transcription en cours. Ex. ESC, F12.",
+            Field("hotkey.cancel_key", "Cancel key", "key", "",
+                  help="Cancels the current recording/transcription. E.g. ESC, F12.",
                   placeholder="ESC"),
-            Field("hotkey.model_modifier", "Modificateur modèle secondaire", "enum", "",
-                  options=[("", "(aucun)")] + MODIFIER_KEYS,
-                  help="Touche de modificateur à maintenir avec le raccourci pour "
-                       "utiliser le modèle secondaire au lieu du principal."),
+            Field("hotkey.model_modifier", "Secondary-model modifier", "enum", "",
+                  options=[("", "(none)")] + MODIFIER_KEYS,
+                  help="Modifier key to hold with the hotkey to use the "
+                       "secondary model instead of the main one."),
         ]),
     ]),
 
-    # ---- AUDIO ------------------------------------------------------------
+    # ---- AUDIO -----------------------------------------------------------
     Page("Audio", "audio-input-microphone-symbolic", [
-        Group("Entrée", [
-            Field("audio.device", "Périphérique d'entrée", "enum", "default",
+        Group("Input", [
+            Field("audio.device", "Input device", "enum", "default",
                   dynamic_options=_audio_sources,
-                  help="Micro utilisé pour l'enregistrement."),
-            Field("audio.sample_rate", "Fréquence d'échantillonnage (Hz)", "int", 16000,
+                  help="Microphone used for recording."),
+            Field("audio.sample_rate", "Sample rate (Hz)", "int", 16000,
                   minimum=8000, maximum=48000, step=1000,
-                  help="Whisper attend 16000 Hz."),
-            Field("audio.max_duration_secs", "Durée max d'enregistrement (s)", "int", 60,
+                  help="Whisper expects 16000 Hz."),
+            Field("audio.max_duration_secs", "Max recording duration (s)", "int", 60,
                   minimum=1, maximum=3600, step=5,
-                  help="Limite de sécurité."),
-            Field("audio.pause_media", "Mettre en pause les médias", "bool", False,
-                  help="Met en pause Spotify, Firefox, etc. pendant l'enregistrement "
-                       "(nécessite playerctl)."),
+                  help="Safety limit."),
+            Field("audio.pause_media", "Pause media players", "bool", False,
+                  help="Pauses Spotify, Firefox, etc. during recording "
+                       "(requires playerctl)."),
         ]),
-        Group("Retour sonore", [
-            Field("audio.feedback.enabled", "Bips de retour", "bool", False,
-                  help="Sons lors du démarrage/arrêt de l'enregistrement."),
-            Field("audio.feedback.theme", "Thème sonore", "string", "default",
-                  help="« default », « subtle », « mechanical » ou un chemin de dossier.",
+        Group("Audio feedback", [
+            Field("audio.feedback.enabled", "Feedback beeps", "bool", False,
+                  help="Sounds on recording start/stop."),
+            Field("audio.feedback.theme", "Sound theme", "string", "default",
+                  help="'default', 'subtle', 'mechanical', or a folder path.",
                   placeholder="default"),
             Field("audio.feedback.volume", "Volume", "float", 0.7,
                   minimum=0.0, maximum=1.0, step=0.05),
         ]),
     ]),
 
-    # ---- WHISPER ----------------------------------------------------------
+    # ---- WHISPER ---------------------------------------------------------
     Page("Whisper", "applications-science-symbolic", [
-        Group("Modèle", [
-            Field("whisper.mode", "Mode d'exécution", "enum", "local", options=[
-                ("local", "Local (whisper.cpp, hors-ligne)"),
-                ("remote", "Distant (serveur whisper.cpp / API OpenAI)"),
-                ("cli", "CLI (binaire whisper externe)"),
+        Group("Model", [
+            Field("whisper.mode", "Execution mode", "enum", "local", options=[
+                ("local", "Local (whisper.cpp, offline)"),
+                ("remote", "Remote (whisper.cpp server / OpenAI API)"),
+                ("cli", "CLI (external whisper binary)"),
             ]),
-            Field("whisper.model", "Modèle", "enum", "large-v3-turbo",
+            Field("whisper.model", "Model", "enum", "large-v3-turbo",
                   options=WHISPER_MODELS,
-                  help="Les modèles .en sont anglais uniquement, plus rapides. "
-                       "large-v3-turbo : rapide avec peu de perte (recommandé GPU)."),
-            Field("whisper.language", "Langue", "string", "auto",
-                  help="Code à deux lettres (« fr », « en »…), « auto », "
-                       "ou liste « en,fr,de » pour l'auto-détection contrainte.",
+                  help="The .en models are English-only and faster. "
+                       "large-v3-turbo: fast with little loss (GPU recommended)."),
+            Field("whisper.language", "Language", "string", "auto",
+                  help="Two-letter code ('fr', 'en'…), 'auto', or a list like "
+                       "'en,fr,de' for constrained auto-detection.",
                   placeholder="fr"),
-            Field("whisper.translate", "Traduire vers l'anglais", "bool", False,
-                  help="Traduit la parole non-anglaise en anglais dans le transcript."),
-            Field("whisper.initial_prompt", "Prompt initial", "string", "",
-                  help="Indice de terminologie/noms propres/format. "
-                       "Ex. « Discussion technique sur Rust, Kubernetes. »"),
+            Field("whisper.translate", "Translate to English", "bool", False,
+                  help="Translates non-English speech into English in the transcript."),
+            Field("whisper.initial_prompt", "Initial prompt", "string", "",
+                  help="Hint for terminology/proper nouns/format. "
+                       "E.g. 'Technical discussion about Rust, Kubernetes.'"),
         ]),
         Group("Performance", [
-            Field("whisper.threads", "Threads CPU", "int", 0,
+            Field("whisper.threads", "CPU threads", "int", 0,
                   minimum=0, maximum=128, step=1,
-                  help="0 = auto-détection."),
+                  help="0 = auto-detection."),
             Field("whisper.flash_attention", "Flash attention", "bool", False,
-                  help="Réduit la mémoire (~75 %) et accélère (~10 %) sur CUDA/Vulkan. "
-                       "Sans effet sur CPU."),
-            Field("whisper.gpu_isolation", "Isolation GPU", "bool", False),
-            Field("whisper.gpu_device", "Index GPU", "int", -1,
+                  help="Reduces memory (~75 %) and speeds up (~10 %) on CUDA/Vulkan. "
+                       "No effect on CPU."),
+            Field("whisper.gpu_isolation", "GPU isolation", "bool", False),
+            Field("whisper.gpu_device", "GPU index", "int", -1,
                   minimum=-1, maximum=16, step=1,
-                  help="-1 = automatique. Sur multi-GPU, force un index précis."),
-            Field("whisper.on_demand_loading", "Chargement à la demande", "bool", False,
-                  help="Libère la mémoire entre les dictées au prix d'une latence au "
-                       "premier appui. Utile pour une dictée sporadique."),
+                  help="-1 = automatic. On multi-GPU, forces a specific index."),
+            Field("whisper.on_demand_loading", "On-demand loading", "bool", False,
+                  help="Frees memory between dictations at the cost of latency on "
+                       "the first press. Useful for occasional dictation."),
         ]),
-        Group("Multi-modèles", [
-            Field("whisper.secondary_model", "Modèle secondaire", "string", "",
-                  help="Pour audio difficile (via model_modifier ou --model).",
+        Group("Multi-model", [
+            Field("whisper.secondary_model", "Secondary model", "string", "",
+                  help="For difficult audio (via model_modifier or --model).",
                   placeholder="large-v3-turbo"),
-            Field("whisper.max_loaded_models", "Modèles max en mémoire", "int", 2,
+            Field("whisper.max_loaded_models", "Max models in memory", "int", 2,
                   minimum=1, maximum=8, step=1),
-            Field("whisper.cold_model_timeout_secs", "Délai de déchargement (s)", "int", 300,
+            Field("whisper.cold_model_timeout_secs", "Unload delay (s)", "int", 300,
                   minimum=0, maximum=3600, step=30,
-                  help="0 = ne jamais décharger automatiquement."),
+                  help="0 = never unload automatically."),
         ]),
-        Group("Serveur distant (mode « remote »)", [
-            Field("whisper.remote_endpoint", "URL du serveur", "string", "",
+        Group("Remote server (remote mode)", [
+            Field("whisper.remote_endpoint", "Server URL", "string", "",
                   placeholder="http://192.168.1.100:8080"),
-            Field("whisper.remote_model", "Nom du modèle distant", "string", "whisper-1",
+            Field("whisper.remote_model", "Remote model name", "string", "whisper-1",
                   placeholder="whisper-1"),
-            Field("whisper.remote_api_key", "Clé API", "string", "",
-                  help="Ou via la variable VOXTYPE_WHISPER_API_KEY."),
+            Field("whisper.remote_api_key", "API key", "string", "",
+                  help="Or via the VOXTYPE_WHISPER_API_KEY variable."),
             Field("whisper.remote_timeout_secs", "Timeout (s)", "int", 30,
                   minimum=1, maximum=600, step=5),
         ]),
     ]),
 
-    # ---- PARAKEET ---------------------------------------------------------
+    # ---- PARAKEET --------------------------------------------------------
     Page("Parakeet", "applications-science-symbolic", [
-        Group("Modèle Parakeet", [
-            Field("parakeet.model", "Modèle", "enum", "parakeet-tdt-0.6b-v3",
+        Group("Parakeet model", [
+            Field("parakeet.model", "Model", "enum", "parakeet-tdt-0.6b-v3",
                   dynamic_options=_parakeet_models,
-                  help="Modèle Parakeet. « -int8 » = quantifié (plus léger). "
-                       "Les modèles marqués ✓ sont déjà téléchargés."),
-            Field("parakeet.on_demand_loading", "Chargement à la demande", "bool", False,
-                  help="Libère la mémoire entre les dictées (latence au 1er appui)."),
-            Field("parakeet.model_type", "Type de modèle", "enum", "", options=[
-                ("", "(auto-détecté)"), ("tdt", "tdt"), ("ctc", "ctc")],
-                  help="Détecté automatiquement depuis les fichiers du modèle ; "
-                       "ne forcez une valeur que si la détection échoue."),
-            Field("parakeet.streaming", "Streaming (frappe incrémentale)", "bool", False,
-                  help="⚠️ Nécessite un modèle streaming dédié contenant "
-                       "tokenizer.model (actuellement parakeet-unified-en-0.6b, "
-                       "ANGLAIS uniquement — à télécharger via « voxtype setup "
-                       "model »). Avec un modèle standard comme le v3 multilingue, "
-                       "le daemon refuse de démarrer. Tape le texte au fil de la "
-                       "parole au lieu d'attendre la fin de la dictée."),
+                  help="Parakeet model. '-int8' = quantized (lighter). "
+                       "Models marked ✓ are already downloaded."),
+            Field("parakeet.on_demand_loading", "On-demand loading", "bool", False,
+                  help="Frees memory between dictations (latency on the first press)."),
+            Field("parakeet.model_type", "Model type", "enum", "", options=[
+                ("", "(auto-detected)"), ("tdt", "tdt"), ("ctc", "ctc")],
+                  help="Detected automatically from the model files; only force "
+                       "a value if detection fails."),
+            Field("parakeet.streaming", "Streaming (incremental typing)", "bool", False,
+                  help="⚠️ Requires a dedicated streaming model containing "
+                       "tokenizer.model (currently parakeet-unified-en-0.6b, "
+                       "ENGLISH only — download via 'voxtype setup model'). "
+                       "With a standard model like the multilingual v3, the "
+                       "daemon refuses to start. Types text as you speak "
+                       "instead of waiting for the end of the dictation."),
         ]),
     ]),
 
-    # ---- SORTIE -----------------------------------------------------------
-    Page("Sortie", "text-editor-symbolic", [
-        Group("Mode de sortie", [
+    # ---- OUTPUT ----------------------------------------------------------
+    Page("Output", "text-editor-symbolic", [
+        Group("Output mode", [
             Field("output.mode", "Mode", "enum", "type", options=[
-                ("type", "Frappe directe (simule le clavier)"),
-                ("paste", "Coller (presse-papiers + Ctrl+V)"),
-                ("clipboard", "Presse-papiers seul"),
-                ("file", "Fichier"),
-            ], help="« type » fonctionne partout. « paste » est plus rapide pour les "
-                    "longs textes mais le raccourci varie selon l'appli."),
-            Field("output.fallback_to_clipboard", "Repli sur presse-papiers", "bool", True,
-                  help="Si la frappe échoue, dépose le texte dans le presse-papiers."),
-            Field("output.auto_submit", "Valider automatiquement (Entrée)", "bool", False,
-                  help="Appuie sur Entrée après la dictée (chats, formulaires)."),
-            Field("output.shift_enter_newlines", "Maj+Entrée pour les sauts de ligne", "bool", False,
-                  help="Utile pour Cursor, Slack, Discord où Entrée valide."),
-            Field("output.append_text", "Texte ajouté après chaque dictée", "enum", "",
+                ("type", "Direct typing (simulates keyboard)"),
+                ("paste", "Paste (clipboard + Ctrl+V)"),
+                ("clipboard", "Clipboard only"),
+                ("file", "File"),
+            ], help="'type' works everywhere. 'paste' is faster for long texts, "
+                    "but the shortcut varies by app."),
+            Field("output.fallback_to_clipboard", "Clipboard fallback", "bool", True,
+                  help="If typing fails, drops the text into the clipboard."),
+            Field("output.auto_submit", "Auto-submit (Enter)", "bool", False,
+                  help="Presses Enter after dictation (chats, forms)."),
+            Field("output.shift_enter_newlines", "Shift+Enter for newlines", "bool", False,
+                  help="Useful for Cursor, Slack, Discord where Enter submits."),
+            Field("output.append_text", "Text appended after each dictation", "enum", "",
                   options=[
-                      ("", "(rien)"),
-                      (" ", "Espace"),
-                      ("\n", "Nouvelle ligne"),
+                      ("", "(none)"),
+                      (" ", "Space"),
+                      ("\n", "New line"),
                   ],
-                  help="Séparateur ajouté à la fin de chaque dictée (avant "
-                       "l'auto-validation). Un espace évite que deux dictées "
-                       "successives se collent. Une valeur personnalisée saisie "
-                       "à la main dans le fichier est conservée."),
+                  help="Separator appended at the end of each dictation (before "
+                       "auto-submit). A space prevents two consecutive dictations "
+                       "from sticking together. A custom value typed by hand in "
+                       "the file is preserved."),
         ]),
-        Group("Pilotes de frappe", [
-            Field("output.driver_order", "Ordre des pilotes", "driver_order",
+        Group("Typing drivers", [
+            Field("output.driver_order", "Driver order", "driver_order",
                   ["wtype", "dotool", "ydotool", "clipboard"],
                   options=[
-                      ("wtype", "wtype (Wayland, Unicode direct)"),
-                      ("dotool", "dotool (uinput + disposition xkb)"),
-                      ("ydotool", "ydotool (uinput, daemon requis)"),
-                      ("clipboard", "clipboard (repli presse-papiers)"),
+                      ("wtype", "wtype (Wayland, direct Unicode)"),
+                      ("dotool", "dotool (uinput + xkb layout)"),
+                      ("ydotool", "ydotool (uinput, daemon required)"),
+                      ("clipboard", "clipboard (clipboard fallback)"),
                   ],
-                  help="Pilotes essayés dans l'ordre jusqu'à ce que l'un réussisse."),
-            Field("output.dotool_xkb_layout", "Disposition clavier (dotool)", "enum", "us",
+                  help="Drivers tried in order until one succeeds."),
+            Field("output.dotool_xkb_layout", "Keyboard layout (dotool)", "enum", "us",
                   dynamic_options=_xkb_layouts,
-                  help="Disposition xkb utilisée par dotool pour simuler les touches."),
-            Field("output.dotool_xkb_variant", "Variante clavier (dotool)", "enum", "",
+                  help="xkb layout used by dotool to simulate keys."),
+            Field("output.dotool_xkb_variant", "Keyboard variant (dotool)", "enum", "",
                   dynamic_options=_xkb_variants_current,
-                  help="⚠️ En français, choisissez « oss » : la variante AZERTY par "
-                       "défaut ne peut pas taper les MAJUSCULES accentuées (Ç, É…)."),
-            Field("output.type_delay_ms", "Délai entre caractères (ms)", "int", 0,
+                  help="⚠️ For French, choose 'oss': the default AZERTY variant "
+                       "cannot type accented uppercase letters (Ç, É…)."),
+            Field("output.type_delay_ms", "Delay between characters (ms)", "int", 0,
                   minimum=0, maximum=500, step=5,
-                  help="0 = le plus rapide. Augmentez si des caractères sautent."),
-            Field("output.pre_type_delay_ms", "Délai avant la frappe (ms)", "int", 0,
+                  help="0 = fastest. Increase if characters get dropped."),
+            Field("output.pre_type_delay_ms", "Delay before typing (ms)", "int", 0,
                   minimum=0, maximum=1000, step=10,
-                  help="Aide certains compositeurs qui perdent le 1er caractère."),
-            Field("output.wtype_shift_prefix", "Préfixe Maj (wtype)", "bool", False,
-                  help="Contournement pour les apps (Discord) qui perdent le 1er "
-                       "caractère CJK."),
-            Field("output.wait_for_modifier_release", "Attendre le relâchement des modificateurs",
+                  help="Helps some compositors that drop the 1st character."),
+            Field("output.wtype_shift_prefix", "Shift prefix (wtype)", "bool", False,
+                  help="Workaround for apps (Discord) that drop the 1st "
+                       "CJK character."),
+            Field("output.wait_for_modifier_release", "Wait for modifier release",
                   "bool", True,
-                  help="Avant de taper, attend que Ctrl/Alt/Maj/Super soient relâchés "
-                       "pour éviter de déclencher des raccourcis involontaires."),
-            Field("output.modifier_release_timeout_ms", "Délai max d'attente (ms)", "int", 750,
+                  help="Before typing, waits for Ctrl/Alt/Shift/Super to be "
+                       "released to avoid triggering unintended shortcuts."),
+            Field("output.modifier_release_timeout_ms", "Max wait delay (ms)", "int", 750,
                   minimum=0, maximum=5000, step=50,
-                  help="Au-delà de ce délai, la frappe démarre même si un "
-                       "modificateur est encore enfoncé."),
+                  help="Past this delay, typing starts even if a modifier is "
+                       "still held."),
         ]),
-        Group("Mode coller / presse-papiers", [
-            Field("output.paste_keys", "Raccourci de collage", "string", "ctrl+v",
-                  help="Ex. ctrl+v, shift+insert, ctrl+shift+v.",
+        Group("Paste / clipboard mode", [
+            Field("output.paste_keys", "Paste shortcut", "string", "ctrl+v",
+                  help="E.g. ctrl+v, shift+insert, ctrl+shift+v.",
                   placeholder="ctrl+v"),
-            Field("output.restore_clipboard", "Restaurer le presse-papiers", "bool", False,
-                  help="Restaure le contenu précédent après le collage (mode « paste »)."),
-            Field("output.restore_clipboard_delay_ms", "Délai avant restauration (ms)",
+            Field("output.restore_clipboard", "Restore clipboard", "bool", False,
+                  help="Restores the previous content after pasting (paste mode)."),
+            Field("output.restore_clipboard_delay_ms", "Restore delay (ms)",
                   "int", 200, minimum=0, maximum=2000, step=50),
         ]),
-        Group("Sortie fichier (mode « file »)", [
-            Field("output.file_path", "Chemin du fichier", "path", "",
-                  placeholder="~/dictées.txt"),
-            Field("output.file_mode", "Mode d'écriture", "enum", "append", options=[
-                ("append", "Ajouter à la fin"),
-                ("overwrite", "Écraser"),
+        Group("File output (file mode)", [
+            Field("output.file_path", "File path", "path", "",
+                  placeholder="~/dictations.txt"),
+            Field("output.file_mode", "Write mode", "enum", "append", options=[
+                ("append", "Append"),
+                ("overwrite", "Overwrite"),
             ]),
         ]),
-        Group("Hooks de sortie", [
-            Field("output.pre_recording_command", "Commande avant enregistrement", "command", "",
-                  help="Exécutée avant le début de l'enregistrement."),
-            Field("output.pre_output_command", "Commande avant la frappe", "command", "",
-                  help="Ex. bloquer les modificateurs : "
+        Group("Output hooks", [
+            Field("output.pre_recording_command", "Pre-recording command", "command", "",
+                  help="Run before recording starts."),
+            Field("output.pre_output_command", "Pre-typing command", "command", "",
+                  help="E.g. block modifiers: "
                        "`hyprctl dispatch submap voxtype_suppress`"),
-            Field("output.post_output_command", "Commande après la frappe", "command", "",
-                  help="Ex. `hyprctl dispatch submap reset`"),
+            Field("output.post_output_command", "Post-typing command", "command", "",
+                  help="E.g. `hyprctl dispatch submap reset`"),
         ]),
-        Group("Post-traitement", [
-            Field("output.post_process.command", "Commande de post-traitement", "command", "",
-                  help="Le transcript passe par stdin, la sortie stdout est tapée. "
-                       "Ex. nettoyage LLM (Ollama), suppression de mots de remplissage."),
+        Group("Post-processing", [
+            Field("output.post_process.command", "Post-processing command", "command", "",
+                  help="Transcript goes in via stdin; stdout output is typed. "
+                       "E.g. LLM cleanup (Ollama), filler word removal."),
             Field("output.post_process.timeout_ms", "Timeout (ms)", "int", 30000,
                   minimum=100, maximum=120000, step=1000),
-            Field("output.post_process.trim", "Supprimer les espaces en bord", "bool", True),
-            Field("output.post_process.fallback_on_empty", "Repli si sortie vide", "bool", True,
-                  help="Utilise le texte original si la commande renvoie du vide."),
+            Field("output.post_process.trim", "Trim whitespace", "bool", True),
+            Field("output.post_process.fallback_on_empty", "Fallback on empty output", "bool", True,
+                  help="Uses the original text if the command returns empty."),
         ]),
     ]),
 
-    # ---- NOTIFICATIONS ----------------------------------------------------
+    # ---- NOTIFICATIONS ---------------------------------------------------
     Page("Notifications", "preferences-system-notifications-symbolic", [
-        Group("Notifications de bureau", [
-            Field("output.notification.on_recording_start", "Au démarrage de l'enregistrement",
+        Group("Desktop notifications", [
+            Field("output.notification.on_recording_start", "On recording start",
                   "bool", False),
-            Field("output.notification.on_recording_stop", "À l'arrêt de l'enregistrement",
+            Field("output.notification.on_recording_stop", "On recording stop",
                   "bool", False),
-            Field("output.notification.on_transcription", "À la fin de la transcription",
-                  "bool", False, help="Affiche le texte transcrit."),
-            Field("output.notification.show_engine_icon", "Afficher l'icône du moteur",
+            Field("output.notification.on_transcription", "On transcription complete",
+                  "bool", False, help="Shows the transcribed text."),
+            Field("output.notification.show_engine_icon", "Show engine icon",
                   "bool", False),
         ]),
     ]),
 
-    # ---- TEXTE ------------------------------------------------------------
-    Page("Texte", "format-text-rich-symbolic", [
-        Group("Traitement du texte", [
-            Field("text.spoken_punctuation", "Ponctuation dictée", "bool", False,
-                  help="Dire « point » insère « . », etc."),
-            Field("text.smart_auto_submit", "Auto-validation intelligente", "bool", False,
-                  help="Dire « submit » en fin de dictée appuie sur Entrée "
-                       "(le mot est retiré du texte)."),
-            Field("text.filter_filler_words", "Filtrer les mots de remplissage", "bool", True,
-                  help="Retire « euh », « um », etc."),
-            Field("text.filler_words", "Mots de remplissage", "list",
+    # ---- TEXT ------------------------------------------------------------
+    Page("Text", "format-text-rich-symbolic", [
+        Group("Text processing", [
+            Field("text.spoken_punctuation", "Spoken punctuation", "bool", False,
+                  help="Saying 'point' inserts '.', etc."),
+            Field("text.smart_auto_submit", "Smart auto-submit", "bool", False,
+                  help="Saying 'submit' at the end of a dictation presses Enter "
+                       "(the word is removed from the text)."),
+            Field("text.filter_filler_words", "Filter filler words", "bool", True,
+                  help="Removes 'uh', 'um', etc."),
+            Field("text.filler_words", "Filler words", "list",
                   ["uh", "um", "er", "ah", "eh", "hmm", "hm", "mm", "mhm"],
-                  help="Liste séparée par des virgules.",
-                  placeholder="euh, hum, ben"),
+                  help="Comma-separated list.",
+                  placeholder="uh, um, er"),
         ]),
-        Group("Remplacements", [
-            # Champ spécial : éditeur clé→valeur dédié (géré par un widget custom).
-            Field("text.replacements", "Remplacements de mots", "replacements", {},
-                  help="Remplacements automatiques, insensibles à la casse. "
-                       "Ex. « vox type » → « voxtype »."),
+        Group("Replacements", [
+            # Special field: dedicated key→value editor (handled by a custom widget).
+            Field("text.replacements", "Word replacements", "replacements", {},
+                  help="Automatic case-insensitive replacements. "
+                       "E.g. 'vox type' → 'voxtype'."),
         ]),
     ]),
 
-    # ---- VAD --------------------------------------------------------------
-    Page("Détection de voix", "audio-volume-high-symbolic", [
+    # ---- VAD -------------------------------------------------------------
+    Page("Voice Detection", "audio-volume-high-symbolic", [
         Group("Voice Activity Detection", [
-            Field("vad.enabled", "Activer la VAD", "bool", False,
-                  help="Filtre les enregistrements silencieux (évite les "
-                       "hallucinations de Whisper)."),
+            Field("vad.enabled", "Enable VAD", "bool", False,
+                  help="Filters out silent recordings (avoids Whisper "
+                       "hallucinations)."),
             Field("vad.backend", "Backend", "enum", "auto", options=[
                 ("auto", "auto"), ("energy", "energy"), ("whisper", "whisper"),
             ]),
-            Field("vad.threshold", "Seuil de détection", "float", 0.5,
+            Field("vad.threshold", "Detection threshold", "float", 0.5,
                   minimum=0.0, maximum=1.0, step=0.05,
-                  help="0.0 = sensible, 1.0 = agressif."),
-            Field("vad.min_speech_duration_ms", "Durée min de parole (ms)", "int", 100,
+                  help="0.0 = sensitive, 1.0 = aggressive."),
+            Field("vad.min_speech_duration_ms", "Min speech duration (ms)", "int", 100,
                   minimum=0, maximum=5000, step=50),
         ]),
     ]),
 
-    # ---- AFFICHAGE (OSD + statut) -----------------------------------------
-    Page("Affichage", "video-display-symbolic", [
+    # ---- DISPLAY (OSD + status) ------------------------------------------
+    Page("Display", "video-display-symbolic", [
         Group("On-Screen Display (OSD)", [
-            Field("osd.enabled", "Activer l'OSD", "bool", False,
-                  help="Affichage à l'écran de l'état et de la forme d'onde."),
+            Field("osd.enabled", "Enable OSD", "bool", False,
+                  help="On-screen display of status and waveform."),
             Field("osd.frontend", "Frontend", "enum", "gtk4", options=[
-                ("gtk4", "GTK4"), ("quickshell", "Quickshell"), ("native", "Natif"),
+                ("gtk4", "GTK4"), ("quickshell", "Quickshell"), ("native", "Native"),
             ]),
             Field("osd.position", "Position", "enum", "bottom-center", options=OSD_POSITIONS),
-            Field("osd.width_px", "Largeur (px)", "int", 400, minimum=100, maximum=2000, step=10),
-            Field("osd.height_px", "Hauteur (px)", "int", 48, minimum=20, maximum=400, step=4),
-            Field("osd.margin_px", "Marge (px)", "int", 24, minimum=0, maximum=400, step=4),
-            Field("osd.opacity", "Opacité", "float", 1.0, minimum=0.0, maximum=1.0, step=0.05),
-            Field("osd.waveform_gain", "Gain de la forme d'onde", "float", 10.0,
+            Field("osd.width_px", "Width (px)", "int", 400, minimum=100, maximum=2000, step=10),
+            Field("osd.height_px", "Height (px)", "int", 48, minimum=20, maximum=400, step=4),
+            Field("osd.margin_px", "Margin (px)", "int", 24, minimum=0, maximum=400, step=4),
+            Field("osd.opacity", "Opacity", "float", 1.0, minimum=0.0, maximum=1.0, step=0.05),
+            Field("osd.waveform_gain", "Waveform gain", "float", 10.0,
                   minimum=0.0, maximum=100.0, step=1.0),
         ]),
-        Group("Icône de statut (Waybar/tray)", [
-            Field("status.icon_theme", "Thème d'icônes", "enum", "emoji", options=ICON_THEMES),
-            Field("status.urgency", "Urgence des notifications", "enum", "normal", options=[
-                ("low", "low (sans bannière sur GNOME)"),
+        Group("Status icon (Waybar/tray)", [
+            Field("status.icon_theme", "Icon theme", "enum", "emoji", options=ICON_THEMES),
+            Field("status.urgency", "Notification urgency", "enum", "normal", options=[
+                ("low", "low (no banner on GNOME)"),
                 ("normal", "normal"),
                 ("critical", "critical"),
             ]),
         ]),
     ]),
 
-    # ---- RÉUNION ----------------------------------------------------------
-    Page("Réunion", "system-users-symbolic", [
-        Group("Mode réunion", [
-            Field("meeting.enabled", "Activer le mode réunion", "bool", False),
+    # ---- MEETING ---------------------------------------------------------
+    Page("Meeting", "system-users-symbolic", [
+        Group("Meeting mode", [
+            Field("meeting.enabled", "Enable meeting mode", "bool", False),
         ]),
-        Group("Audio de réunion", [
-            Field("meeting.audio.source", "Source audio", "enum", "mic", options=[
-                ("mic", "Micro seul"),
-                ("loopback", "Sortie système (loopback)"),
-                ("both", "Les deux"),
+        Group("Meeting audio", [
+            Field("meeting.audio.source", "Audio source", "enum", "mic", options=[
+                ("mic", "Microphone only"),
+                ("loopback", "System output (loopback)"),
+                ("both", "Both"),
             ]),
         ]),
-        Group("Diarisation (qui parle)", [
-            Field("meeting.diarization.enabled", "Activer la diarisation", "bool", False,
-                  help="Identifie les différents locuteurs."),
+        Group("Diarization (who speaks)", [
+            Field("meeting.diarization.enabled", "Enable diarization", "bool", False,
+                  help="Identifies the different speakers."),
         ]),
     ]),
 
-    # ---- PROFILS ----------------------------------------------------------
-    Page("Profils", "avatar-default-symbolic", [
-        Group("Profils de dictée", [
-            # Champ spécial : éditeur de tables [profiles.<nom>] (widget dédié).
-            Field("profiles", "Profils", "profiles", {},
-                  help="Profils nommés de post-traitement. Les options non "
-                       "renseignées héritent de la configuration principale."),
-        ], description="Utilisés via « voxtype record start --profile <nom> » ou "
-                       "via un modificateur associé ci-dessous."),
-        Group("Modificateur → profil", [
-            Field("hotkey.profile_modifiers", "Associations modificateur → profil",
+    # ---- PROFILES --------------------------------------------------------
+    Page("Profiles", "avatar-default-symbolic", [
+        Group("Dictation profiles", [
+            # Special field: editor for [profiles.<name>] tables (dedicated widget).
+            Field("profiles", "Profiles", "profiles", {},
+                  help="Named post-processing profiles. Unset options inherit "
+                       "from the main configuration."),
+        ], description="Used via 'voxtype record start --profile <name>' or "
+                       "via an associated modifier below."),
+        Group("Modifier → profile", [
+            Field("hotkey.profile_modifiers", "Modifier → profile mappings",
                   "replacements", {},
-                  help="Maintenez ce modificateur avec la touche de dictée pour "
-                       "activer le profil. Clé : un modificateur (LEFTSHIFT, "
-                       "RIGHTCTRL, LEFTALT…), valeur : le nom du profil. "
-                       "Nécessite la détection intégrée du raccourci."),
+                  help="Hold this modifier with the dictation key to activate "
+                       "the profile. Key: a modifier (LEFTSHIFT, RIGHTCTRL, "
+                       "LEFTALT…), value: the profile name. Requires built-in "
+                       "hotkey detection."),
         ]),
     ]),
 ]

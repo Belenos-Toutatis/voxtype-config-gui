@@ -1,6 +1,6 @@
-"""Dispositions et variantes clavier xkb, lues depuis les règles evdev.
+"""xkb keyboard layouts and variants, read from the evdev rules.
 
-Source : /usr/share/X11/xkb/rules/evdev.lst — sections « ! layout » et « ! variant ».
+Source: /usr/share/X11/xkb/rules/evdev.lst — '! layout' and '! variant' sections.
 """
 
 from __future__ import annotations
@@ -10,7 +10,7 @@ import re
 
 _RULES = "/usr/share/X11/xkb/rules/evdev.lst"
 
-# Dispositions à remonter en tête de liste (les plus courantes)
+# Layouts to bring to the top of the list (the most common ones)
 _PRIORITY = ["us", "fr", "gb", "de", "es", "it", "be", "ch", "ca", "pt", "nl"]
 
 
@@ -32,7 +32,7 @@ def _parse() -> tuple[list[tuple[str, str]], dict[str, list[tuple[str, str]]]]:
                 if section == "layout":
                     layouts.append((code, desc))
                 elif section == "variant":
-                    # desc = « fr: French (alt.) » → layout parent + libellé
+                    # desc = 'fr: French (alt.)' → parent layout + label
                     parent, _, label = desc.partition(":")
                     parent = parent.strip()
                     label = label.strip() or desc
@@ -43,10 +43,10 @@ def _parse() -> tuple[list[tuple[str, str]], dict[str, list[tuple[str, str]]]]:
 
 
 def layout_options() -> list[tuple[str, str]]:
-    """[(code, « code — Nom »)], dispositions courantes d'abord."""
+    """[(code, 'code — Name')], common layouts first."""
     layouts, _ = _parse()
     if not layouts:
-        # repli minimal si les règles xkb sont absentes
+        # minimal fallback if the xkb rules are missing
         return [(c, c) for c in _PRIORITY]
     by_code = {c: d for c, d in layouts}
     ordered: list[tuple[str, str]] = []
@@ -62,9 +62,9 @@ def layout_options() -> list[tuple[str, str]]:
 
 
 def variant_options(layout: str) -> list[tuple[str, str]]:
-    """Variantes d'une disposition, précédées de l'option « par défaut » (valeur vide)."""
+    """Variants of a layout, preceded by the 'default' option (empty value)."""
     _, variants = _parse()
-    out: list[tuple[str, str]] = [("", "(par défaut)")]
+    out: list[tuple[str, str]] = [("", "(default)")]
     for code, label in variants.get(layout, []):
         out.append((code, f"{code} — {label}"))
     return out

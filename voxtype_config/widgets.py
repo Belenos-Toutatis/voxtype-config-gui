@@ -1,7 +1,7 @@
-"""Construction des lignes libadwaita à partir des Field du schéma.
+"""Build libadwaita rows from the schema Fields.
 
-Chaque FieldRow encapsule un widget Adw et expose get_value()/set_value()
-dans le type Python attendu par le TOML.
+Each FieldRow wraps an Adw widget and exposes get_value()/set_value()
+in the Python type expected by the TOML.
 """
 
 from __future__ import annotations
@@ -21,7 +21,7 @@ def _split_list(text: str) -> list[str]:
 
 
 def _wrap_factory() -> Gtk.SignalListItemFactory:
-    """Factory de ComboRow : libellés qui s'enroulent au lieu d'être tronqués (…)."""
+    """ComboRow factory: labels that wrap instead of being truncated (…)."""
     factory = Gtk.SignalListItemFactory()
 
     def on_setup(_f, item):
@@ -39,7 +39,7 @@ def _wrap_factory() -> Gtk.SignalListItemFactory:
 
 
 class FieldRow(GObject.Object):
-    """Une ligne de préférence reliée à un Field. Émet 'changed' à toute édition."""
+    """A preference row tied to a Field. Emits 'changed' on any edit."""
 
     __gsignals__ = {"changed": (GObject.SignalFlags.RUN_FIRST, None, ())}
 
@@ -76,7 +76,7 @@ class FieldRow(GObject.Object):
             for _, lbl in opts:
                 model.append(lbl)
             row = Adw.ComboRow(title=f.label, subtitle=self._subtitle(), model=model)
-            row.set_factory(_wrap_factory())          # pas de troncature « … »
+            row.set_factory(_wrap_factory())          # no '…' truncation
             row.connect("notify::selected", self._emit_changed)
             self.row = row
 
@@ -95,7 +95,7 @@ class FieldRow(GObject.Object):
             row = Adw.EntryRow(title=f.label)
             if f.placeholder:
                 row.set_text("")
-            # sous-titre non supporté par EntryRow → on ajoute une info-bulle
+            # subtitle not supported by EntryRow → add a tooltip instead
             if self._subtitle():
                 row.set_tooltip_text(self._subtitle())
             row.connect("changed", self._emit_changed)
@@ -123,7 +123,7 @@ class FieldRow(GObject.Object):
             self.row = ProfilesRow(f, self._emit_changed)
 
         else:
-            raise ValueError(f"type de champ inconnu : {kind}")
+            raise ValueError(f"unknown field type: {kind}")
 
     def _on_pick_file(self, _btn):
         dialog = Gtk.FileDialog(title=self.field.label)
@@ -164,7 +164,7 @@ class FieldRow(GObject.Object):
         return None
 
     def set_enum_options(self, opts: list[tuple[str, str]]):
-        """Repeuple une liste déroulante (réactivité, ex. variantes selon disposition)."""
+        """Repopulates a dropdown (reactivity, e.g. layout-dependent variants)."""
         if self.field.kind != "enum":
             return
         current = self.get_value()
@@ -191,7 +191,7 @@ class FieldRow(GObject.Object):
             if val in self._enum_values:
                 self.row.set_selected(self._enum_values.index(val))
             else:
-                # valeur hors-liste : on l'ajoute pour ne pas la perdre
+                # out-of-list value: add it so it isn't lost
                 model = self.row.get_model()
                 model.append(f"{val} (actuel)")
                 self._enum_values.append(val)
@@ -211,7 +211,7 @@ class FieldRow(GObject.Object):
 
 
 class KeyRow(Adw.EntryRow):
-    """Champ de touche : saisie libre + capture en direct + suggestions."""
+    """Key field: free text input + live capture + suggestions."""
 
     def __init__(self, field: Field, on_change):
         super().__init__(title=field.label)
@@ -222,14 +222,14 @@ class KeyRow(Adw.EntryRow):
             self.set_tooltip_text(self._base_tooltip)
         self.connect("changed", self._on_changed)
 
-        # bouton « capturer »
+        # 'capture' button
         capture_btn = Gtk.Button(icon_name="media-record-symbolic",
                                  valign=Gtk.Align.CENTER, css_classes=["flat"])
-        capture_btn.set_tooltip_text("Capturer : appuyez sur une touche")
+        capture_btn.set_tooltip_text("Capture: press a key")
         capture_btn.connect("clicked", self._on_capture)
         self.add_suffix(capture_btn)
 
-        # menu de suggestions de touches courantes
+        # menu of common-key suggestions
         menu = Gio.Menu()
         for name in keymap.COMMON_KEYS:
             menu.append(name, f"keyrow.set::{name}")
@@ -241,7 +241,7 @@ class KeyRow(Adw.EntryRow):
         menu_btn = Gtk.MenuButton(icon_name="pan-down-symbolic",
                                   valign=Gtk.Align.CENTER, css_classes=["flat"],
                                   menu_model=menu)
-        menu_btn.set_tooltip_text("Touches courantes")
+        menu_btn.set_tooltip_text("Common keys")
         self.add_suffix(menu_btn)
 
     def _on_changed(self, *_):
@@ -249,7 +249,7 @@ class KeyRow(Adw.EntryRow):
         self._on_change()
 
     def _validate(self):
-        """Marque le champ en rouge si la touche n'est pas reconnue par VoxType."""
+        """Marks the field red when the key is not recognized by VoxType."""
         text = self.get_text().strip()
         if keymap.is_valid_key(text):
             self.remove_css_class("error")
@@ -257,27 +257,27 @@ class KeyRow(Adw.EntryRow):
         else:
             self.add_css_class("error")
             self.set_tooltip_text(
-                f"« {text} » n'est pas un nom de touche reconnu par VoxType.\n"
-                "Utilisez « Capturer », une suggestion, ou un keycode préfixé "
+                f"'{text}' is not a key name recognized by VoxType.\n"
+                "Use 'Capture', a suggestion, or a prefixed keycode "
                 "(EVTEST_226, WEV_234)."
             )
 
     def _on_capture(self, _btn):
         win = Adw.Window(transient_for=self.get_root(), modal=True,
                          default_width=360, default_height=180,
-                         title="Capture de touche")
+                         title="Key capture")
         tv = Adw.ToolbarView()
         tv.add_top_bar(Adw.HeaderBar(show_title=False))
         box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=12,
                       valign=Gtk.Align.CENTER, halign=Gtk.Align.CENTER,
                       margin_top=12, margin_bottom=12, margin_start=12, margin_end=12)
         box.append(Gtk.Image.new_from_icon_name("input-keyboard-symbolic"))
-        box.append(Gtk.Label(label="Appuyez sur la touche à utiliser…",
+        box.append(Gtk.Label(label="Press the key to use…",
                              css_classes=["title-3"]))
-        hint = Gtk.Label(label="(Échap pour annuler la fenêtre via le bouton)",
+        hint = Gtk.Label(label="(Esc or Cancel to close)",
                          css_classes=["dim-label"])
         box.append(hint)
-        cancel = Gtk.Button(label="Annuler", halign=Gtk.Align.CENTER)
+        cancel = Gtk.Button(label="Cancel", halign=Gtk.Align.CENTER)
         cancel.connect("clicked", lambda *_: win.close())
         box.append(cancel)
         tv.set_content(box)
@@ -305,7 +305,7 @@ class KeyRow(Adw.EntryRow):
 
 
 class DriverOrderRow(Adw.ExpanderRow):
-    """Ordre des pilotes de frappe : une liste déroulante par position."""
+    """Typing driver order: one dropdown per position."""
 
     def __init__(self, field: Field, on_change):
         super().__init__(title=field.label, subtitle=field.help)
@@ -315,10 +315,10 @@ class DriverOrderRow(Adw.ExpanderRow):
         self._values = [v for v, _ in self._options]
         self._combos: list[Adw.ComboRow] = []
 
-        n_slots = len(self._options)                     # un emplacement par pilote
+        n_slots = len(self._options)                     # one slot per driver
         for i in range(n_slots):
             model = Gtk.StringList()
-            model.append("— aucun —")
+            model.append("— none —")
             for _, lbl in self._options:
                 model.append(lbl)
             combo = Adw.ComboRow(title=f"Position {i + 1}", model=model)
@@ -333,15 +333,15 @@ class DriverOrderRow(Adw.ExpanderRow):
 
     def _update_subtitle(self):
         order = self.get_value()
-        self.set_subtitle(" → ".join(order) if order else "aucun pilote sélectionné")
+        self.set_subtitle(" → ".join(order) if order else "no driver selected")
 
     def get_value(self) -> list[str]:
         order: list[str] = []
         for combo in self._combos:
             idx = combo.get_selected()
-            if idx > 0:                                  # 0 = « aucun »
+            if idx > 0:                                  # 0 = 'none'
                 val = self._values[idx - 1]
-                if val not in order:                     # pas de doublon
+                if val not in order:                     # no duplicate
                     order.append(val)
         return order
 
@@ -357,7 +357,7 @@ class DriverOrderRow(Adw.ExpanderRow):
 
 
 class MultiSelectRow(Adw.ExpanderRow):
-    """Sélection multiple via interrupteurs (ex. modificateurs de raccourci)."""
+    """Multiple selection via switches (e.g. hotkey modifiers)."""
 
     def __init__(self, field: Field, on_change):
         super().__init__(title=field.label, subtitle=field.help)
@@ -375,7 +375,7 @@ class MultiSelectRow(Adw.ExpanderRow):
 
     def _update_subtitle(self):
         sel = self.get_value()
-        self.set_subtitle(", ".join(sel) if sel else "aucun")
+        self.set_subtitle(", ".join(sel) if sel else "none")
 
     def get_value(self) -> list[str]:
         return [code for code, sw in self._switches.items() if sw.get_active()]
@@ -388,10 +388,9 @@ class MultiSelectRow(Adw.ExpanderRow):
 
 
 class ReplacementsRow(Gtk.Box):
-    """Tableau à deux colonnes (Dit → Remplacé par) pour les remplacements de mots.
+    """Two-column table (Spoken → Replaced by) for word replacements.
 
-    Trié par ordre alphabétique de la colonne « Dit » à l'ouverture, à l'ajout
-    et à l'enregistrement.
+    Sorted alphabetically by the 'Spoken' column on open, on add, and on save.
     """
 
     def __init__(self, field: Field, on_change):
@@ -401,36 +400,36 @@ class ReplacementsRow(Gtk.Box):
         self._on_change = on_change
         self._rows: list[dict] = []          # {row, key, value}
 
-        # En-tête de colonnes
+        # Column headers
         header = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6,
                          margin_start=6, margin_end=6)
-        h1 = Gtk.Label(label="Dit (entendu)", xalign=0, hexpand=True,
+        h1 = Gtk.Label(label="Spoken", xalign=0, hexpand=True,
                        css_classes=["heading", "dim-label"])
-        h2 = Gtk.Label(label="Remplacé par", xalign=0, hexpand=True,
+        h2 = Gtk.Label(label="Replaced by", xalign=0, hexpand=True,
                        css_classes=["heading", "dim-label"])
         header.append(h1)
         header.append(h2)
         spacer = Gtk.Box()
-        spacer.set_size_request(34, -1)      # aligne avec les boutons « corbeille »
+        spacer.set_size_request(34, -1)      # aligns with the 'trash' buttons
         header.append(spacer)
         self.append(header)
 
-        # Liste des lignes (style « boxed-list » natif)
+        # List of rows (native 'boxed-list' style)
         self._listbox = Gtk.ListBox(selection_mode=Gtk.SelectionMode.NONE,
                                     css_classes=["boxed-list"])
         self.append(self._listbox)
 
-        # Barre d'action
+        # Action bar
         footer = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6,
                          margin_top=6)
         add_btn = Gtk.Button(child=Adw.ButtonContent(
-            icon_name="list-add-symbolic", label="Ajouter"))
+            icon_name="list-add-symbolic", label="Add"))
         add_btn.add_css_class("flat")
         add_btn.connect("clicked", self._on_add)
         sort_btn = Gtk.Button(child=Adw.ButtonContent(
-            icon_name="view-sort-ascending-symbolic", label="Trier"))
+            icon_name="view-sort-ascending-symbolic", label="Sort"))
         sort_btn.add_css_class("flat")
-        sort_btn.set_tooltip_text("Reclasser par ordre alphabétique")
+        sort_btn.set_tooltip_text("Sort alphabetically")
         sort_btn.connect("clicked", lambda *_: (self._resort(), self._on_change()))
         self._count = Gtk.Label(css_classes=["dim-label"], hexpand=True, xalign=1)
         footer.append(add_btn)
@@ -438,7 +437,7 @@ class ReplacementsRow(Gtk.Box):
         footer.append(self._count)
         self.append(footer)
 
-    # -- gestion des lignes -------------------------------------------------
+    # -- row management -------------------------------------------------
 
     def _make_row(self, key: str, val: str) -> dict:
         row = Gtk.ListBoxRow(activatable=False)
@@ -482,12 +481,12 @@ class ReplacementsRow(Gtk.Box):
         self._on_change()
 
     def _resort(self):
-        items = self.get_value()             # déjà trié
+        items = self.get_value()             # already sorted
         self.set_value(items)
 
     def _update_count(self):
         n = len(self._rows)
-        self._count.set_label(f"{n} remplacement" + ("s" if n > 1 else ""))
+        self._count.set_label(f"{n} replacement" + ("s" if n > 1 else ""))
 
     # -- valeurs ------------------------------------------------------------
 
@@ -497,7 +496,7 @@ class ReplacementsRow(Gtk.Box):
             k = entry["key"].get_text().strip()
             if k:
                 pairs.append((k, entry["value"].get_text()))
-        pairs.sort(key=lambda kv: kv[0].casefold())   # tri alphabétique
+        pairs.sort(key=lambda kv: kv[0].casefold())   # alphabetical sort
         return dict(pairs)
 
     def set_value(self, mapping: dict):
@@ -509,18 +508,18 @@ class ReplacementsRow(Gtk.Box):
 
 
 PROFILE_OUTPUT_MODES = [
-    ("", "(hériter du mode principal)"),
-    ("type", "Frappe directe"),
-    ("paste", "Coller"),
-    ("clipboard", "Presse-papiers seul"),
+    ("", "(inherit from main mode)"),
+    ("type", "Direct typing"),
+    ("paste", "Paste"),
+    ("clipboard", "Clipboard only"),
 ]
 
 
 class ProfilesRow(Gtk.Box):
-    """Éditeur des profils nommés ([profiles.<nom>]).
+    """Editor for named profiles ([profiles.<name>]).
 
-    Chaque profil surcharge la commande de post-traitement, son timeout et/ou
-    le mode de sortie ; le reste hérite de la configuration principale.
+    Each profile overrides the post-processing command, its timeout and/or
+    the output mode; the rest inherits from the main configuration.
     """
 
     def __init__(self, field: Field, on_change):
@@ -537,7 +536,7 @@ class ProfilesRow(Gtk.Box):
         footer = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6,
                          margin_top=6)
         add_btn = Gtk.Button(child=Adw.ButtonContent(
-            icon_name="list-add-symbolic", label="Ajouter un profil"))
+            icon_name="list-add-symbolic", label="Add profile"))
         add_btn.add_css_class("flat")
         add_btn.connect("clicked", self._on_add)
         self._count = Gtk.Label(css_classes=["dim-label"], hexpand=True, xalign=1)
@@ -545,21 +544,21 @@ class ProfilesRow(Gtk.Box):
         footer.append(self._count)
         self.append(footer)
 
-    # -- gestion des profils -------------------------------------------------
+    # -- profile management -------------------------------------------------
 
     def _make_profile(self, name: str, data: dict) -> dict:
-        exp = Adw.ExpanderRow(title=name or "(sans nom)")
+        exp = Adw.ExpanderRow(title=name or "(unnamed)")
 
-        name_e = Adw.EntryRow(title="Nom du profil")
+        name_e = Adw.EntryRow(title="Profile name")
         name_e.set_text(name)
-        cmd_e = Adw.EntryRow(title="Commande de post-traitement")
+        cmd_e = Adw.EntryRow(title="Post-processing command")
         cmd_e.set_text(str(data.get("post_process_command", "") or ""))
-        cmd_e.set_tooltip_text("Le transcript passe par stdin, la sortie stdout "
-                               "est tapée. Vide = hériter.")
+        cmd_e.set_tooltip_text("Transcript goes in via stdin; stdout output is typed. "
+                               "Empty = inherit.")
 
         adj = Gtk.Adjustment(lower=0, upper=120000, step_increment=1000,
                              page_increment=10000)
-        timeout = Adw.SpinRow(title="Timeout (ms)", subtitle="0 = hériter",
+        timeout = Adw.SpinRow(title="Timeout (ms)", subtitle="0 = inherit",
                               adjustment=adj, digits=0)
         try:
             timeout.set_value(float(data.get("post_process_timeout_ms", 0) or 0))
@@ -569,7 +568,7 @@ class ProfilesRow(Gtk.Box):
         mode_model = Gtk.StringList()
         for _, lbl in PROFILE_OUTPUT_MODES:
             mode_model.append(lbl)
-        mode = Adw.ComboRow(title="Mode de sortie", model=mode_model)
+        mode = Adw.ComboRow(title="Output mode", model=mode_model)
         mode.set_factory(_wrap_factory())
         values = [v for v, _ in PROFILE_OUTPUT_MODES]
         current = str(data.get("output_mode", "") or "")
@@ -577,7 +576,7 @@ class ProfilesRow(Gtk.Box):
 
         trash = Gtk.Button(icon_name="user-trash-symbolic",
                            valign=Gtk.Align.CENTER, css_classes=["flat"])
-        trash.set_tooltip_text("Supprimer ce profil")
+        trash.set_tooltip_text("Delete this profile")
         exp.add_suffix(trash)
 
         entry = {"expander": exp, "name": name_e, "cmd": cmd_e,
@@ -594,7 +593,7 @@ class ProfilesRow(Gtk.Box):
 
     def _on_name_changed(self, entry: dict):
         name = entry["name"].get_text().strip()
-        entry["expander"].set_title(name or "(sans nom)")
+        entry["expander"].set_title(name or "(unnamed)")
         self._on_change()
 
     def _append(self, name: str, data: dict) -> dict:
@@ -623,7 +622,7 @@ class ProfilesRow(Gtk.Box):
 
     def _update_count(self):
         n = len(self._profiles)
-        self._count.set_label(f"{n} profil" + ("s" if n > 1 else ""))
+        self._count.set_label(f"{n} profile" + ("s" if n > 1 else ""))
 
     # -- valeurs ------------------------------------------------------------
 
@@ -632,7 +631,7 @@ class ProfilesRow(Gtk.Box):
         for entry in self._profiles:
             name = entry["name"].get_text().strip()
             if not name:
-                continue                     # profil sans nom : ignoré
+                continue                     # unnamed profile: ignored
             params: dict = {}
             cmd = entry["cmd"].get_text().strip()
             if cmd:
