@@ -1,8 +1,8 @@
-"""Correspondance des touches : keycode GDK → nom de touche evdev attendu par VoxType.
+"""Key mapping: GDK keycode → evdev key name expected by VoxType.
 
-VoxType nomme les touches comme les constantes Linux KEY_* sans le préfixe
-(« PAUSE », « SCROLLLOCK », « RIGHTALT », « F13 »…). Sous Wayland/X11, le keycode
-matériel renvoyé par GDK vaut le code evdev + 8.
+VoxType names keys like the Linux KEY_* constants without the prefix
+('PAUSE', 'SCROLLLOCK', 'RIGHTALT', 'F13'...). Under Wayland/X11, the hardware
+keycode returned by GDK equals the evdev code + 8.
 """
 
 from __future__ import annotations
@@ -10,7 +10,7 @@ from __future__ import annotations
 import functools
 import re
 
-# Table de secours si python-evdev est absent (touches usuelles pour un raccourci)
+# Fallback table if python-evdev is missing (common keys for a hotkey)
 _FALLBACK = {
     1: "ESC", 14: "BACKSPACE", 15: "TAB", 28: "ENTER", 57: "SPACE",
     58: "CAPSLOCK", 69: "NUMLOCK", 70: "SCROLLLOCK", 119: "PAUSE",
@@ -28,7 +28,7 @@ for _i, _code in enumerate(range(183, 195)):    # F13..F24
 
 
 def evdev_name_from_keycode(hw_keycode: int) -> str | None:
-    """Renvoie le nom VoxType d'une touche à partir du keycode matériel GDK."""
+    """Returns the VoxType name of a key from the GDK hardware keycode."""
     code = hw_keycode - 8
     if code < 0:
         return None
@@ -46,10 +46,10 @@ def evdev_name_from_keycode(hw_keycode: int) -> str | None:
 
 @functools.lru_cache(maxsize=1)
 def valid_key_names() -> frozenset[str]:
-    """Ensemble des noms de touche acceptés par VoxType = noms evdev sans « KEY_ ».
+    """Set of key names accepted by VoxType = evdev names without 'KEY_'.
 
-    VoxType lie la crate evdev et reconnaît ces noms ; on s'aligne sur la même
-    source pour ne jamais proposer une touche refusée.
+    VoxType binds the evdev crate and recognizes these names; we align on the
+    same source so we never suggest a rejected key.
     """
     names: set[str] = set()
     try:
@@ -63,46 +63,46 @@ def valid_key_names() -> frozenset[str]:
     return frozenset(names)
 
 
-# Suggestions, par ordre d'utilité. Filtrées contre la table evdev à l'usage,
-# donc toute entrée non reconnue par VoxType est automatiquement écartée.
+# Suggestions, in order of usefulness. Filtered against the evdev table at use
+# time, so any entry not recognized by VoxType is automatically discarded.
 _SUGGESTED = [
-    # touches « dédiées » idéales pour un raccourci
+    # 'dedicated' keys ideal for a hotkey
     "PAUSE", "SCROLLLOCK", "CAPSLOCK", "NUMLOCK", "SYSRQ", "MENU",
-    # touches d'édition / navigation (utiles pour l'annulation)
+    # editing / navigation keys (useful for cancellation)
     "ESC", "BACKSPACE", "DELETE", "INSERT", "HOME", "END", "PAGEUP", "PAGEDOWN",
     "TAB", "SPACE",
-    # modificateurs
+    # modifiers
     "RIGHTALT", "RIGHTCTRL", "RIGHTSHIFT", "RIGHTMETA",
     "LEFTALT", "LEFTCTRL", "LEFTSHIFT", "LEFTMETA",
-    # touches de fonction
+    # function keys
     "F1", "F2", "F3", "F4", "F5", "F6", "F7", "F8", "F9", "F10", "F11", "F12",
     "F13", "F14", "F15", "F16", "F17", "F18", "F19", "F20",
 ]
 
 
 def suggested_keys() -> list[str]:
-    """Suggestions garanties valides (filtrées contre evdev)."""
+    """Suggestions guaranteed valid (filtered against evdev)."""
     valid = valid_key_names()
-    if not valid:                       # evdev indisponible : on garde la liste telle quelle
+    if not valid:                       # evdev unavailable: keep the list as-is
         return list(_SUGGESTED)
     return [k for k in _SUGGESTED if k in valid]
 
 
-# Compat : ancienne constante, désormais filtrée
+# Compatibility: legacy constant, now filtered
 COMMON_KEYS = suggested_keys()
 
-# Préfixes de keycode bruts acceptés par VoxType (cf. message d'aide du parseur)
+# Raw keycode prefixes accepted by VoxType (see the parser's help message)
 _KEYCODE_RE = re.compile(r"^(EVTEST|WEV|X11|XEV)_\d+$")
 
 
 def is_valid_key(name: str) -> bool:
-    """Vrai si VoxType accepterait ce nom : nom evdev connu ou keycode préfixé."""
+    """True if VoxType would accept this name: known evdev name or prefixed keycode."""
     name = (name or "").strip()
     if not name:
-        return True                     # vide = « non défini », accepté
+        return True                     # empty = 'unset', accepted
     if _KEYCODE_RE.match(name):
         return True
     valid = valid_key_names()
     if not valid:
-        return True                     # evdev indisponible : on ne bloque pas
+        return True                     # evdev unavailable: don't block
     return name in valid

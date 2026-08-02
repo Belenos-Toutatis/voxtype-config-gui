@@ -1,4 +1,4 @@
-"""Interactions avec le système : daemon systemd, détection de VoxType."""
+"""System interactions: systemd daemon, VoxType detection."""
 
 from __future__ import annotations
 
@@ -22,17 +22,17 @@ def daemon_is_active() -> bool:
 
 
 def restart_daemon() -> tuple[bool, str]:
-    """Redémarre le service utilisateur voxtype. Renvoie (succès, message)."""
+    """Restarts the voxtype user service. Returns (success, message)."""
     try:
         res = subprocess.run(
             ["systemctl", "--user", "restart", "voxtype"],
             capture_output=True, text=True, timeout=30,
         )
         if res.returncode == 0:
-            return True, "Daemon VoxType redémarré."
-        return False, res.stderr.strip() or "Échec du redémarrage."
+            return True, "VoxType daemon restarted."
+        return False, res.stderr.strip() or "Restart failed."
     except FileNotFoundError:
-        return False, "systemctl introuvable."
+        return False, "systemctl not found."
     except Exception as e:  # noqa: BLE001
         return False, str(e)
 

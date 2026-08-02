@@ -1,30 +1,30 @@
-# Configuration VoxType — éditeur graphique
+# VoxType Configuration — graphical editor
 
-Une application **GTK4 / libadwaita** pour configurer entièrement
-[VoxType](https://github.com/) via une interface graphique, sans éditer le
-`config.toml` à la main.
+A **GTK4 / libadwaita** application to configure
+[VoxType](https://github.com/) entirely through a graphical interface, without
+hand-editing `config.toml`.
 
 ![capture](data/earth.tyler.VoxTypeConfig.svg)
 
-## Fonctionnalités
+## Features
 
-- **Couverture complète** du schéma de configuration VoxType, organisé en pages :
-  Général, Raccourci, Audio, Whisper, Parakeet, Sortie, Notifications, Texte,
-  Détection de voix (VAD), Affichage (OSD + statut), Réunion.
-- **Préserve vos commentaires et l'ordre** du fichier : seules les valeurs
-  modifiées sont réécrites (via [`tomlkit`](https://github.com/sdispater/tomlkit)).
-- **Sauvegarde automatique** (`config.toml.bak`) à chaque enregistrement.
-- **Redémarrage du daemon** en un clic (`systemctl --user restart voxtype`).
-- **Aperçu du TOML** avant d'enregistrer.
-- Détection dynamique des **périphériques audio** (via `pactl`).
-- Éditeur dédié pour les **remplacements de mots** (clé → valeur).
-- N'écrit pas les valeurs par défaut : le fichier reste minimal et lisible.
+- **Full coverage** of the VoxType configuration schema, organized in pages:
+  General, Hotkey, Audio, Whisper, Parakeet, Output, Notifications, Text,
+  Voice Detection (VAD), Display (OSD + status), Meeting.
+- **Preserves your comments and ordering**: only the values you change are
+  rewritten (via [`tomlkit`](https://github.com/sdispater/tomlkit)).
+- **Automatic backup** (`config.toml.bak`) on every save.
+- **One-click daemon restart** (`systemctl --user restart voxtype`).
+- **TOML preview** before saving.
+- Dynamic detection of **audio devices** (via `pactl`).
+- Dedicated editor for **word replacements** (key → value).
+- Does not write default values: the file stays minimal and readable.
 
 ## Installation (Debian/Ubuntu)
 
-### Recommandé : dépôt APT (signé, mises à jour automatiques)
+### Recommended: APT repository (signed, automatic updates)
 
-Une seule fois, on ajoute le dépôt et sa clé de signature :
+Add the repository and its signing key once:
 
 ```bash
 sudo install -d /etc/apt/keyrings
@@ -36,47 +36,46 @@ sudo apt update
 sudo apt install voxtype-config
 ```
 
-Le dépôt étant signé et déclaré comme source de confiance, **aucun avertissement
-« paquet tiers »** n'apparaît, et les nouvelles versions arrivent via
+Because the repository is signed and declared as a trusted source, **no
+"third-party package" warning** appears, and new versions arrive via
 `sudo apt upgrade`.
 
-### Alternative : `.deb` direct
+### Alternative: direct `.deb`
 
 ```bash
 sudo apt install ./build/voxtype-config_*_all.deb
 ```
 
-> Installé par cette voie via le Centre d'applications GNOME, un bandeau
-> « paquet tiers » s'affiche (normal pour tout `.deb` hors dépôt). L'installation
-> en terminal ci-dessus ne l'affiche pas.
+> Installed this way from GNOME Software, a "third-party package" banner shows
+> (normal for any `.deb` outside a repository). Installing from the terminal
+> as above does not show it.
 
-### Lancer / désinstaller
+### Run / uninstall
 
 ```bash
-voxtype-config                 # ou « Configuration VoxType » dans vos applications
+voxtype-config                 # or "VoxType Configuration" in your applications
 sudo apt remove voxtype-config
 ```
 
-> Votre `~/.config/voxtype/config.toml` n'est jamais touché par la
-> désinstallation.
+> Your `~/.config/voxtype/config.toml` is never touched by uninstalling.
 
-## Publier une nouvelle version (mainteneur)
+## Releasing a new version (maintainer)
 
 ```bash
-# 1. (optionnel) bump de version dans build-deb.sh
-./build-deb.sh            # construit build/voxtype-config_<ver>_all.deb
-./build-apt-repo.sh       # régénère et signe le dépôt APT dans docs/
+# 1. (optional) bump the version in build-deb.sh
+./build-deb.sh            # builds build/voxtype-config_<ver>_all.deb
+./build-apt-repo.sh       # regenerates and signs the APT repository in docs/
 git add -A && git commit -m "release <ver>" && git push
 ```
 
-GitHub Pages sert le dossier `docs/`. La signature utilise la clé GPG
-`VoxType Config GUI APT` (empreinte `D7464FE0D891102553AFC9CA7B73B857273877E7`) ;
-la clé **privée** reste dans le trousseau local, seule la clé publique
-(`docs/KEY.gpg`) est publiée.
+GitHub Pages serves the `docs/` directory. Signing uses the GPG key
+`VoxType Config GUI APT` (fingerprint `D7464FE0D891102553AFC9CA7B73B857273877E7`);
+the **private** key stays in the local keyring, only the public key
+(`docs/KEY.gpg`) is published.
 
-## Développement / exécution sans installer
+## Development / running without installing
 
-Les liaisons GTK proviennent du système ; seul `tomlkit` est un paquet Python.
+GTK bindings come from the system; only `tomlkit` is a Python package.
 
 ```bash
 python3 -m venv --system-site-packages .venv
@@ -84,21 +83,21 @@ python3 -m venv --system-site-packages .venv
 PYTHONPATH=. .venv/bin/python -m voxtype_config
 ```
 
-On peut viser un autre fichier de config :
+You can target another config file:
 
 ```bash
-PYTHONPATH=. .venv/bin/python -m voxtype_config /chemin/vers/config.toml
+PYTHONPATH=. .venv/bin/python -m voxtype_config /path/to/config.toml
 ```
 
 ## Architecture
 
-| Fichier | Rôle |
+| File | Role |
 |---|---|
-| `voxtype_config/schema.py` | Description déclarative de **toutes** les options. Ajouter un réglage = ajouter un `Field` ici. |
-| `voxtype_config/widgets.py` | Génère les lignes libadwaita depuis le schéma (get/set par type). |
-| `voxtype_config/config_io.py` | Lecture/écriture TOML par chemin pointé, en préservant la mise en forme. |
-| `voxtype_config/app.py` | Fenêtre, navigation, sauvegarde, redémarrage du daemon. |
-| `voxtype_config/system.py` | Interactions systemd / détection de VoxType. |
+| `voxtype_config/schema.py` | Declarative description of **all** options. Adding a setting = adding a `Field` here. |
+| `voxtype_config/widgets.py` | Generates the libadwaita rows from the schema (get/set per type). |
+| `voxtype_config/config_io.py` | TOML read/write by dotted path, preserving formatting. |
+| `voxtype_config/app.py` | Window, navigation, saving, daemon restart. |
+| `voxtype_config/system.py` | systemd interactions / VoxType detection. |
 
-L'UI étant générée à partir du schéma, suivre une nouvelle option de VoxType ne
-demande qu'une ligne dans `schema.py`.
+Because the UI is generated from the schema, following a new VoxType option
+only requires one line in `schema.py`.

@@ -1,8 +1,8 @@
-"""Lecture / écriture du config.toml de VoxType en préservant commentaires et ordre.
+"""Reading / writing VoxType's config.toml while preserving comments and ordering.
 
-S'appuie sur tomlkit : on charge le document existant, on ne modifie que les
-valeurs touchées par l'utilisateur, et on réécrit le fichier à l'identique pour
-tout le reste (commentaires, ordre des clés, mise en forme).
+Uses tomlkit: the existing document is loaded, only the values changed by the
+user are modified, and the file is rewritten identically for everything else
+(comments, key order, formatting).
 """
 
 from __future__ import annotations
@@ -16,23 +16,23 @@ from tomlkit import TOMLDocument
 
 
 def default_config_path() -> Path:
-    """Chemin standard du config.toml de VoxType."""
+    """Standard path of VoxType's config.toml."""
     base = os.environ.get("XDG_CONFIG_HOME") or os.path.expanduser("~/.config")
     return Path(base) / "voxtype" / "config.toml"
 
 
 class ConfigDocument:
-    """Enveloppe autour d'un document tomlkit pour un accès par chemin pointé.
+    """Wrapper around a tomlkit document for dotted-path access.
 
-    Les clés sont adressées par chemin : "hotkey.key", "output.notification.on_transcription"…
-    Les tables intermédiaires sont créées à la demande lors de l'écriture.
+    Keys are addressed by path: "hotkey.key", "output.notification.on_transcription"...
+    Intermediate tables are created on demand when writing.
     """
 
     def __init__(self, path: Path, doc: TOMLDocument):
         self.path = path
         self.doc = doc
 
-    # ---- chargement / sauvegarde ------------------------------------------
+    # ---- loading / saving ------------------------------------------
 
     @classmethod
     def load(cls, path: Path | None = None) -> "ConfigDocument":
@@ -45,7 +45,7 @@ class ConfigDocument:
         return cls(path, doc)
 
     def backup(self) -> Path | None:
-        """Copie l'ancien fichier en .bak avant d'écrire. Renvoie le chemin du backup."""
+        """Copies the previous file to .bak before writing. Returns the backup path."""
         if not self.path.exists():
             return None
         bak = self.path.with_suffix(self.path.suffix + ".bak")
@@ -61,7 +61,7 @@ class ConfigDocument:
     def dumps(self) -> str:
         return tomlkit.dumps(self.doc)
 
-    # ---- accès par chemin pointé ------------------------------------------
+    # ---- dotted-path access ------------------------------------------
 
     def get(self, dotted: str, default=None):
         node = self.doc
@@ -87,7 +87,7 @@ class ConfigDocument:
         node[leaf] = value
 
     def unset(self, dotted: str) -> None:
-        """Supprime une clé si elle existe (laisse les tables vides en place)."""
+        """Removes a key if it exists (leaves empty tables in place)."""
         parts = dotted.split(".")
         *tables, leaf = parts
         node = self.doc
